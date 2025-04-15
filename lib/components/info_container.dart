@@ -23,6 +23,7 @@ class _InfoContainerState extends State<InfoContainer> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          splashColor: AppColors.splashColor,
           borderRadius: BorderRadius.circular(12),
           onTap: () {},
           child: Ink(
@@ -35,39 +36,37 @@ class _InfoContainerState extends State<InfoContainer> {
             child: SizedBox(
               width: double.infinity,
               height: 100.0,
-              child: Container(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    // mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Department',
-                              style: TextStyle(fontSize: 16),
-                            ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  // mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Department',
+                            style: TextStyle(fontSize: 16),
                           ),
-                          Icon(
-                            Icons.edit,
-                            color: AppColors.secondaryGrey,
-                            size: 24.0,
-                          ),
-                        ],
-                      ),
-                      Text(
-                        widget.data,
-                        style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                        ),
+                        Icon(
+                          Icons.edit,
+                          color: AppColors.secondaryGrey,
+                          size: 24.0,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      widget.data,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
             ),

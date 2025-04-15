@@ -37,6 +37,7 @@ dependencies:
   google_sign_in: ^6.2.2
   supabase_flutter: ^2.8.4
   flutter_dotenv: ^5.2.1
+  font_awesome_flutter: ^10.8.0
 
 dev_dependencies:
   flutter_test:

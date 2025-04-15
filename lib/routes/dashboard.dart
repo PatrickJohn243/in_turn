@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:inturn/routes/admin_dashboard.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/views/filter_page.dart';
 import 'package:inturn/views/home_page.dart';
 import 'package:inturn/views/profile_page.dart';
 import 'package:inturn/views/saved_page.dart';
+import 'package:inturn/views/search_page.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -22,9 +24,10 @@ class _DashboardState extends State<Dashboard> {
         index: currentPageIndex,
         children: [
           HomePage(),
-          FilterPage(),
+          SearchPage(),
           SavedPage(),
           ProfilePage(),
+          AdminDashboard()
         ],
       ),
       bottomNavigationBar: NavigationBarTheme(
@@ -83,6 +86,17 @@ class _DashboardState extends State<Dashboard> {
                 color: AppColors.primaryGrey,
               ),
               label: 'Profile',
+              selectedIcon: Icon(
+                Icons.person,
+                color: AppColors.primary,
+              ),
+            ),
+            NavigationDestination(
+              icon: Icon(
+                Icons.person_outline,
+                color: AppColors.primaryGrey,
+              ),
+              label: 'Admin',
               selectedIcon: Icon(
                 Icons.person,
                 color: AppColors.primary,

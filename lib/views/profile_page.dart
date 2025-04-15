@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/components/info_container.dart';
+import 'package:inturn/services/google_auth.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -23,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const Text(
                   "Profile",
                   style: TextStyle(
-                      fontSize: 38,
+                      fontSize: 28,
                       color: Colors.black,
                       fontWeight: FontWeight.bold),
                 ),
@@ -32,7 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Text(
                     "Account",
                     style:
-                        TextStyle(fontSize: 20, color: AppColors.secondaryGrey),
+                        TextStyle(fontSize: 16, color: AppColors.secondaryGrey),
                   ),
                 ),
                 const InfoContainer(
@@ -55,13 +57,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         TextStyle(fontSize: 20, color: AppColors.secondaryGrey),
                   ),
                 ),
+                //Google Login----//
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () {},
+                      onTap: () async {
+                        await googleAuthLogin();
+                      },
                       child: Ink(
                         decoration: BoxDecoration(
                             color: Colors.white,
@@ -78,11 +83,19 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  "Log In to Google",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 12.0),
+                                      child: Icon(FontAwesomeIcons.google),
+                                    ),
+                                    Text(
+                                      "Continue with Google",
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
                                 ),
                                 Icon(Icons.arrow_forward_ios_rounded)
                               ],
@@ -93,6 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
+                //Delete Account----//
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Material(
@@ -135,6 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
+                //Terms and Services----//
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Material(
@@ -159,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Sign In To Google",
+                                  "Terms and Services",
                                   style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
