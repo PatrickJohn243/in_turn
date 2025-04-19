@@ -2,6 +2,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:inturn/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 Future<void> googleAuthLogin() async {
   /// TODO: update the Web client ID with your own.
@@ -41,5 +42,8 @@ Future<void> googleAuthLogin() async {
 }
 
 Future<void> googleAuthLogout() async {
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+
   await supabase.auth.signOut();
+  await googleSignIn.disconnect();
 }

@@ -8,9 +8,4 @@ class Colleges {
     required this.college,
     required this.description,
   });
-
-  @override
-  String toString() {
-    return 'Colleges(id: $id, name: $college, description: $description)';
-  }
 }
