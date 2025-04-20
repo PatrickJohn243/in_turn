@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/components/info_container.dart';
+import 'package:inturn/main.dart';
 import 'package:inturn/services/google_auth.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:inturn/views/auth/info_onboarding.dart';
+import 'package:inturn/views/auth/info_onboarding_pages/role_selection.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,8 +15,41 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final user = supabase.auth.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    checkIfNewUser();
+  }
+
+  Future<void> checkIfNewUser() async {
+    final currentUser = supabase.auth.currentUser;
+
+    if (currentUser == null) return;
+
+    final data = await supabase
+        .from('users')
+        .select()
+        .eq('userId', currentUser.id)
+        .maybeSingle();
+
+    if (data == null) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const InfoOnboarding()),
+        );
+      }
+    } else {
+      if (mounted) setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = supabase.auth.currentUser;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -29,26 +65,28 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: Colors.black,
                       fontWeight: FontWeight.bold),
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    "Account",
-                    style:
-                        TextStyle(fontSize: 16, color: AppColors.secondaryGrey),
+                if (user != null) ...[
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: Text(
+                      "Account",
+                      style: TextStyle(
+                          fontSize: 20, color: AppColors.secondaryGrey),
+                    ),
                   ),
-                ),
-                const InfoContainer(
-                  type: "Name",
-                  data: "Patrick John H. Flores",
-                ),
-                const InfoContainer(
-                  type: "Email",
-                  data: "florespatrickjohn243@gmail.com",
-                ),
-                const InfoContainer(
-                  type: "Mobile Number",
-                  data: "+639205788651",
-                ),
+                  const InfoContainer(
+                    type: "Name",
+                    data: "Patrick John H. Flores",
+                  ),
+                  const InfoContainer(
+                    type: "Email",
+                    data: "florespatrickjohn243@gmail.com",
+                  ),
+                  const InfoContainer(
+                    type: "Mobile Number",
+                    data: "+639205788651",
+                  ),
+                ],
                 const Padding(
                   padding: EdgeInsets.only(top: 16.0),
                   child: Text(
@@ -57,7 +95,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         TextStyle(fontSize: 20, color: AppColors.secondaryGrey),
                   ),
                 ),
-                //Google Login----//
+
+                /// Google Login/Logout
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Material(
@@ -65,39 +104,49 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () async {
-                        await googleAuthLogin();
+                        if (user == null) {
+                          await googleAuthLogin();
+                          await checkIfNewUser(); // Re-check after login
+                          if (mounted) setState(() {});
+                        } else {
+                          await googleAuthLogout();
+                          if (mounted) setState(() {});
+                        }
                       },
                       child: Ink(
                         decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color.fromARGB(255, 229, 229, 229),
-                            )),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 229, 229, 229),
+                          ),
+                        ),
                         child: SizedBox(
                           width: double.infinity,
                           height: 80,
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             alignment: Alignment.centerLeft,
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
-                                    Padding(
+                                    const Padding(
                                       padding: EdgeInsets.only(right: 12.0),
                                       child: Icon(FontAwesomeIcons.google),
                                     ),
                                     Text(
-                                      "Continue with Google",
-                                      style: TextStyle(
+                                      user == null
+                                          ? "Continue with Google"
+                                          : "Sign Out with Google",
+                                      style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
-                                Icon(Icons.arrow_forward_ios_rounded)
+                                const Icon(Icons.arrow_forward_ios_rounded)
                               ],
                             ),
                           ),
@@ -106,7 +155,57 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                //Delete Account----//
+
+                if (user != null) ...[
+                  // Delete account button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          // handle delete account
+                        },
+                        child: Ink(
+                          decoration: BoxDecoration(
+                              color: AppColors.error,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color.fromARGB(255, 229, 229, 229),
+                              )),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 70,
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              alignment: Alignment.centerLeft,
+                              child: const Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Delete Account",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    color: Colors.white,
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+
+                // Terms
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Material(
@@ -116,54 +215,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       onTap: () {},
                       child: Ink(
                         decoration: BoxDecoration(
-                            color: AppColors.error,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color.fromARGB(255, 229, 229, 229),
-                            )),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 70,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            alignment: Alignment.centerLeft,
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Delete Account",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: Colors.white,
-                                )
-                              ],
-                            ),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 229, 229, 229),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-                //Terms and Services----//
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () {},
-                      child: Ink(
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color.fromARGB(255, 229, 229, 229),
-                            )),
                         child: SizedBox(
                           width: double.infinity,
                           height: 80,
@@ -187,7 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

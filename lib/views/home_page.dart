@@ -36,9 +36,7 @@ class _HomePageState extends State<HomePage> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Theme.of(context).colorScheme.background,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.background,
           automaticallyImplyLeading: false,
           leading: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 0, 6),
@@ -53,18 +51,18 @@ class _HomePageState extends State<HomePage> {
                   width: 2,
                 ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(2),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Image.network(
-                    'https://media.licdn.com/dms/image/v2/D5603AQEovRV8ocp-tg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728179878874?e=2147483647&v=beta&t=8NKFhkZH0e8fkxkFR1MmVjD6Qr_6b_jTtdoFHna9km8',
-                    width: 300,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
+              // child: Padding(
+              //   padding: const EdgeInsets.all(2),
+              //   child: ClipRRect(
+              //     borderRadius: BorderRadius.circular(50),
+              //     child: Image.network(
+              //       'https://media.licdn.com/dms/image/v2/D5603AQEovRV8ocp-tg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728179878874?e=2147483647&v=beta&t=8NKFhkZH0e8fkxkFR1MmVjD6Qr_6b_jTtdoFHna9km8',
+              //       width: 300,
+              //       height: 200,
+              //       fit: BoxFit.cover,
+              //     ),
+              //   ),
+              // ),
             ),
           ),
           title: Align(
@@ -251,12 +249,12 @@ class _HomePageState extends State<HomePage> {
                       'KYOCERA Document Solutions Development Philippines, Inc.',
                       'IT Services',
                     ),
-                    _buildListItem(
-                      context,
-                      'https://scontent.fceb1-5.fna.fbcdn.net/v/t39.30808-6/305034776_514529540678628_2212971473121609761_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGRk31q2YmQRriANXukqBgVv9tIF4nIpPG_20gXicik8SWjqYV4CUxyCtryB9Rlw77w_aQbSBFseq3t_hqNoZqH&_nc_ohc=rkzW1RcsfrQAX_RdRm0&_nc_oc=AQmxYwPDX2P3YLFDQnVGEUx_fxQs&_nc_zt=23&_nc_ht=scontent.fceb1-5.fna&oh=00_AfCPHh1tjgdLVUGwWJaFq3fKXp6jxC-4I9YrU9B3DZ2lbA&oe=6488B8A2',
-                      'Green Module Systems',
-                      'App Development',
-                    ),
+                    // _buildListItem(
+                    //   context,
+                    //   'https://scontent.fceb1-5.fna.fbcdn.net/v/t39.30808-6/305034776_514529540678628_2212971473121609761_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGRk31q2YmQRriANXukqBgVv9tIF4nIpPG_20gXicik8SWjqYV4CUxyCtryB9Rlw77w_aQbSBFseq3t_hqNoZqH&_nc_ohc=rkzW1RcsfrQAX_RdRm0&_nc_oc=AQmxYwPDX2P3YLFDQnVGEUx_fxQs&_nc_zt=23&_nc_ht=scontent.fceb1-5.fna&oh=00_AfCPHh1tjgdLVUGwWJaFq3fKXp6jxC-4I9YrU9B3DZ2lbA&oe=6488B8A2',
+                    //   'Green Module Systems',
+                    //   'App Development',
+                    // ),
                   ],
                 ),
               ],
