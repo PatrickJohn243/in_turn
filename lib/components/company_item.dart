@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/views/company_info.dart';
 
 class CompanyItem extends StatefulWidget {
   final Companies company;
@@ -33,7 +34,13 @@ class _CompanyItemState extends State<CompanyItem> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        CompanyInfo(company: widget.company)));
+          },
           borderRadius: BorderRadius.circular(12),
           child: Ink(
             decoration: BoxDecoration(
@@ -115,13 +122,13 @@ class _CompanyItemState extends State<CompanyItem> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             spacing: 4,
                             runSpacing: 4,
-                            children: List.generate(
-                              widget.company.applicableCourse.length * 2 - 1,
-                              (index) {
-                                if (index % 2 == 0) {
-                                  final course = widget
-                                      .company.applicableCourse[index ~/ 2];
-                                  return Container(
+                            children: () {
+                              final List<Widget> chips = [];
+                              final courses = widget.company.applicableCourse;
+
+                              for (int i = 0; i < courses.length; i++) {
+                                chips.add(
+                                  Container(
                                     decoration: BoxDecoration(
                                       color: AppColors.primary,
                                       borderRadius: BorderRadius.circular(4),
@@ -129,28 +136,33 @@ class _CompanyItemState extends State<CompanyItem> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 4),
                                     child: Text(
-                                      course,
+                                      courses[i],
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  );
-                                } else {
-                                  return const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 2),
-                                    child: Text(
-                                      '/',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                  ),
+                                );
+                                if (i < courses.length - 1) {
+                                  chips.add(
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 2),
+                                      child: Text(
+                                        '/',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
                                   );
                                 }
-                              },
-                            ),
+                              }
+
+                              return chips;
+                            }(),
                           ),
                           const SizedBox(height: 4),
                           Padding(
@@ -164,7 +176,10 @@ class _CompanyItemState extends State<CompanyItem> {
                                       0, 0, 12, 0),
                                   child: Text(
                                     widget.company.location,
-                                    style: const TextStyle(fontSize: 16),
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        overflow: TextOverflow.ellipsis),
+                                    maxLines: 1,
                                   ),
                                 ),
                                 Padding(

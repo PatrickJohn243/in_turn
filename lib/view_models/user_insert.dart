@@ -11,7 +11,6 @@ class UserInsert {
 
     final response = await supabase.from("users").insert({
       'userId': user?.id,
-      // 'userId' : "d6ee3282-7ecd-491d-b72b-9587eec960b0",
       'firstName': userData.firstName,
       'lastName': userData.lastName,
       'course': userData.course,
