@@ -29,6 +29,7 @@ class _CompanyInfoState extends State<CompanyInfo> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: true,
+          backgroundColor: Colors.white,
         ),
         body: Padding(
           padding: const EdgeInsets.all(12),

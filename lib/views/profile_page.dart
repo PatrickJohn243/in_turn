@@ -1,9 +1,17 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:inturn/components/info_container.dart';
 import 'package:inturn/main.dart';
+import 'package:inturn/models/colleges.dart';
+import 'package:inturn/models/courses.dart';
+import 'package:inturn/models/users.dart';
 import 'package:inturn/services/google_auth.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:inturn/view_models/college_fetching.dart';
+import 'package:inturn/view_models/courses_fetching.dart';
+import 'package:inturn/view_models/user_fetching.dart';
 import 'package:inturn/views/auth/info_onboarding.dart';
 import 'package:inturn/views/auth/info_onboarding_pages/role_selection.dart';
 
@@ -16,6 +24,10 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final user = supabase.auth.currentUser;
+  var userId = '';
+  Users? userProfile;
+  Colleges? userCollege;
+  Courses? userCourse;
 
   @override
   void initState() {
@@ -25,6 +37,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> checkIfNewUser() async {
     final currentUser = supabase.auth.currentUser;
+    setState(() {
+      userId = currentUser!.id;
+    });
 
     if (currentUser == null) return;
 
@@ -43,7 +58,24 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     } else {
       if (mounted) setState(() {});
+      getUser();
     }
+  }
+
+  Future<void> getUser() async {
+    final Users? profile = await UserFetching().fetchUser(userId);
+    final Colleges collegeProfile =
+        await CollegeFetching().fetchCollege(profile!.collegeId);
+    final Courses? courseProfile =
+        await CoursesFetching().fetchCourse(profile.collegeId, profile.course);
+    setState(() {
+      if (mounted) {
+        userProfile = profile;
+        userCollege = collegeProfile;
+        userCourse = courseProfile;
+        log(userCollege.toString());
+      }
+    });
   }
 
   @override
@@ -74,17 +106,21 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontSize: 20, color: AppColors.secondaryGrey),
                     ),
                   ),
-                  const InfoContainer(
+                  InfoContainer(
                     type: "Name",
-                    data: "Patrick John H. Flores",
+                    data: "${userProfile?.firstName} ${userProfile?.lastName}",
                   ),
-                  const InfoContainer(
+                  InfoContainer(
                     type: "Email",
-                    data: "florespatrickjohn243@gmail.com",
+                    data: "${user.email}",
                   ),
-                  const InfoContainer(
-                    type: "Mobile Number",
-                    data: "+639205788651",
+                  InfoContainer(
+                    type: "College",
+                    data: "${userCollege?.college}",
+                  ),
+                  InfoContainer(
+                    type: "Course",
+                    data: "${userCourse?.courseName}",
                   ),
                 ],
                 const Padding(

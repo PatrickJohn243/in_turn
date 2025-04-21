@@ -1,5 +1,3 @@
-import 'package:inturn/models/colleges.dart';
-
 class Users {
   final String userId;
   final String firstName;
@@ -16,4 +14,15 @@ class Users {
     required this.course,
     required this.collegeId,
   });
+
+  factory Users.fromJson(Map<String, dynamic> json) {
+    return Users(
+      userId: json['userId'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      role: json['role'],
+      collegeId: json['collegeId'],
+      course: json['course'],
+    );
+  }
 }

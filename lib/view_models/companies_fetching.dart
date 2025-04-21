@@ -8,7 +8,7 @@ class CompaniesFetching {
   Future<List<Companies>> fetchCompanies() async {
     try {
       final response = await supabase.from("companies").select();
-      log(response.toString());
+      // log(response.toString());
 
       return (response as List).map((company) {
         return Companies.fromJson(company);

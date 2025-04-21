@@ -43,16 +43,16 @@ class _InfoContainerState extends State<InfoContainer> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Expanded(
                           child: Text(
-                            'Department',
-                            style: TextStyle(fontSize: 16),
+                            widget.type,
+                            style: const TextStyle(fontSize: 16),
                           ),
                         ),
-                        Icon(
+                        const Icon(
                           Icons.edit,
                           color: AppColors.secondaryGrey,
                           size: 24.0,

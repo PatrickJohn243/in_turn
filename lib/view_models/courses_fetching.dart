@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:inturn/models/courses.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -9,11 +11,22 @@ class CoursesFetching {
         await supabase.from("courses").select().eq('collegeId', collegeId);
 
     return (response as List).map((course) {
-      return Courses(
-        id: course['id'],
-        courseName: course['courseName'],
-        collegeId: course['collegeId'],
-      );
+      return Courses.fromJson(course as Map<String, dynamic>);
     }).toList();
+  }
+
+  Future<Courses?> fetchCourse(String collegeId, String courseId) async {
+    try {
+      final response = await supabase
+          .from('courses')
+          .select()
+          .eq('id', courseId)
+          .eq('collegeId', collegeId)
+          .single();
+      return Courses.fromJson(response);
+    } catch (e) {
+      log("$e");
+      return null;
+    }
   }
 }

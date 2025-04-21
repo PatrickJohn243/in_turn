@@ -1,37 +1,24 @@
-// import 'package:inturn/models/colleges.dart';
-// import 'package:inturn/models/users.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:developer';
 
-// class UserFetching {
-//   final SupabaseClient supabase = Supabase.instance.client;
+import 'package:inturn/models/users.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-//   Future<List<Users>> fetchAllUsers() async {
-//     final response = await supabase.from('users').select();
+class UserFetching {
+  final SupabaseClient supabase = Supabase.instance.client;
 
-//     return response
-//         .map((user) => Users(
-//               firstName: user['firstName'],
-//               lastName: user['lastName'],
-//               role: user['role'],
-//               // colleges: user['colleges'],
-//               course: user['course'],
-//               yearSection: user['yearSection'],
-//             ))
-//         .toList();
-//   }
-// }
+  Future<Users?> fetchUser(String loggedUserId) async {
+    try {
+      final response = await supabase
+          .from('users')
+          .select()
+          .eq('userId', loggedUserId)
+          .single();
 
-// class CollegeFetching {
-//   final SupabaseClient _client = Supabase.instance.client;
-
-//   Future<List<Colleges>> fetchAllColleges() async {
-//     final response = await _client.from('colleges').select();
-
-//     return response
-//         .map((college) => Colleges(
-//               college: college['college'],
-//               description: college['description'],
-//             ))
-//         .toList();
-//   }
-// }
+      log(response.toString());
+      return Users.fromJson(response);
+    } catch (e) {
+      log('$e');
+      return null;
+    }
+  }
+}

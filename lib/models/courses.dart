@@ -8,4 +8,12 @@ class Courses {
     required this.courseName,
     required this.collegeId,
   });
+
+  factory Courses.fromJson(Map<String, dynamic> json) {
+    return Courses(
+      id: json['id'],
+      courseName: json['courseName'],
+      collegeId: json['collegeId'],
+    );
+  }
 }
