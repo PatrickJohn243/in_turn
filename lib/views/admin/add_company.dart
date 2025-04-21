@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:path/path.dart' as path;
 
 class AddCompany extends StatefulWidget {
   const AddCompany({Key? key}) : super(key: key);
@@ -16,7 +19,7 @@ class _AddCompanyState extends State<AddCompany> {
 
   // Course selection
   List<Map<String, dynamic>> _courses = [];
-  Set<String> _selectedCourseIds = {};
+  Set<String> _selectedCourseNames = {};
   bool _isLoadingCourses = true;
 
   // Controllers for all text fields
@@ -29,9 +32,11 @@ class _AddCompanyState extends State<AddCompany> {
   late TextEditingController contactDetailsController;
   late TextEditingController designationController;
   late TextEditingController contactPerson2Controller;
+  late TextEditingController collegeIdController;
 
   String? _companyImageUrl;
   bool _isLoading = false;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -45,7 +50,8 @@ class _AddCompanyState extends State<AddCompany> {
     contactDetailsController = TextEditingController();
     designationController = TextEditingController();
     contactPerson2Controller = TextEditingController();
-    testConnection(); // Test connection first
+    collegeIdController = TextEditingController();
+    testConnection();
     _fetchCourses();
   }
 
@@ -60,6 +66,7 @@ class _AddCompanyState extends State<AddCompany> {
     contactDetailsController.dispose();
     designationController.dispose();
     contactPerson2Controller.dispose();
+    collegeIdController.dispose();
     super.dispose();
   }
 
@@ -72,7 +79,7 @@ class _AddCompanyState extends State<AddCompany> {
       final response = await _supabase
           .from('courses')
           .select()
-          .order('name')
+          .order('courseName')
           .timeout(const Duration(seconds: 10));
 
       if (response == null) {
@@ -84,7 +91,7 @@ class _AddCompanyState extends State<AddCompany> {
         _isLoadingCourses = false;
       });
     } catch (e) {
-      print('Error fetching courses: $e'); // Add debug print
+      print('Error fetching courses: $e');
       if (mounted) {
         setState(() {
           _isLoadingCourses = false;
@@ -100,11 +107,51 @@ class _AddCompanyState extends State<AddCompany> {
   }
 
   Future<void> _uploadImage() async {
-    // TODO: Implement image upload to Supabase Storage
-    // For now, we'll just use a placeholder
-    setState(() {
-      _companyImageUrl = 'https://via.placeholder.com/150';
-    });
+    try {
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      // Pick an image file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+        withData: true,
+        withReadStream: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = File(result.files.first.path!);
+        final fileName =
+            '${DateTime.now().millisecondsSinceEpoch}${path.extension(file.path)}';
+
+        // Upload to Supabase Storage
+        await _supabase.storage.from('company_images').upload(fileName, file);
+
+        // Get the public URL
+        final imageUrl =
+            _supabase.storage.from('company_images').getPublicUrl(fileName);
+
+        setState(() {
+          _companyImageUrl = imageUrl;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+        });
+      }
+    }
   }
 
   Future<void> _saveCompany() async {
@@ -115,24 +162,37 @@ class _AddCompanyState extends State<AddCompany> {
       return;
     }
 
+    if (collegeIdController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('College ID is required')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // Convert selected course names to a comma-separated string
+      final applicableCourses = _selectedCourseNames.join(',');
+
       await _supabase.from('companies').insert({
-        'company_name': companyNameController.text,
-        'company_image': _companyImageUrl,
+        'companyName': companyNameController.text,
+        'companyImage': _companyImageUrl,
         'website': websiteController.text,
         'location': locationController.text,
         'address': addressController.text,
         'mode': _internshipMode,
-        'moa_duration': moaDurationController.text,
-        'contact_person': contactPersonController.text,
-        'contact_details': contactDetailsController.text,
+        'moaDuration': moaDurationController.text,
+        'contactPerson': contactPersonController.text,
+        'contactDetails': contactDetailsController.text,
         'designation': designationController.text,
-        'contact_person2': contactPerson2Controller.text,
-        'course_ids': _selectedCourseIds.toList(),
+        'contactPerson2': contactPerson2Controller.text,
+        'collegeId': collegeIdController.text,
+        'applicableCourses': applicableCourses,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
       });
 
       if (mounted) {
@@ -180,296 +240,321 @@ class _AddCompanyState extends State<AddCompany> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(color: AppColors.primary),
-      child: SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: true,
-            backgroundColor: AppColors.primary,
-            iconTheme: const IconThemeData(color: Colors.white),
-            title: const Text(
-              "Add Company",
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.save, color: Colors.white),
-                onPressed: _isLoading ? null : _saveCompany,
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: AppColors.primary,
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Add Company",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save, color: Colors.white),
+            onPressed: _isLoading ? null : _saveCompany,
           ),
-          body: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: _uploadImage,
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.shadow),
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white),
-                                child: SizedBox(
-                                  height: 150,
-                                  width: 150,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_a_photo_rounded,
-                                        size: 40,
-                                        color: _companyImageUrl != null
-                                            ? Colors.green
-                                            : null,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        _companyImageUrl != null
-                                            ? "Image Uploaded"
-                                            : "Upload Company Photo",
-                                        textAlign: TextAlign.center,
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Container(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _isUploadingImage ? null : _uploadImage,
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: AppColors.shadow),
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.white),
+                              child: SizedBox(
+                                height: 150,
+                                width: 150,
+                                child: _isUploadingImage
+                                    ? const Center(
+                                        child: CircularProgressIndicator(),
                                       )
-                                    ],
-                                  ),
-                                ),
+                                    : Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          if (_companyImageUrl != null)
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Image.network(
+                                                _companyImageUrl!,
+                                                height: 100,
+                                                width: 100,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                          else
+                                            Icon(
+                                              Icons.add_a_photo_rounded,
+                                              size: 40,
+                                              color: _companyImageUrl != null
+                                                  ? Colors.green
+                                                  : null,
+                                            ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            _companyImageUrl != null
+                                                ? "Change Image"
+                                                : "Upload Company Photo",
+                                            textAlign: TextAlign.center,
+                                          )
+                                        ],
+                                      ),
                               ),
                             ),
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.only(top: 24.0),
-                          child: Text(
-                            "Company Info",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 24.0),
+                        child: Text(
+                          "Company Info",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: companyNameController,
-                            decoration: InputDecoration(
-                                hintText: "Enter Company Name",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Company Name"),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: websiteController,
-                            decoration: InputDecoration(
-                                hintText: "Enter Company Website",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Company Website"),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: locationController,
-                            decoration: InputDecoration(
-                              hintText: "Enter Company Location",
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: companyNameController,
+                          decoration: InputDecoration(
+                              hintText: "Enter Company Name",
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12)),
-                              labelText: "Company Location",
-                            ),
-                            minLines: 1,
-                            maxLines: 2,
-                          ),
+                              labelText: "Company Name"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: addressController,
-                            decoration: InputDecoration(
-                                hintText: "Enter Company Address",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Address"),
-                            minLines: 1,
-                            maxLines: 2,
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24.0),
-                          child: Divider(),
-                        ),
-                        const Text(
-                          "Agreement Details",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: DropdownButtonFormField<String>(
-                            alignment: Alignment.bottomCenter,
-                            value: _internshipMode,
-                            decoration: InputDecoration(
-                              labelText: "Internship Mode",
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: collegeIdController,
+                          decoration: InputDecoration(
+                              hintText: "Enter College ID",
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  gapPadding: 4),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 16),
-                            ),
-                            items: internshipModes
-                                .map((mode) => DropdownMenuItem(
-                                      value: mode,
-                                      child: Text(mode),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _internshipMode = value;
-                              });
-                            },
-                          ),
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "College ID"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: moaDurationController,
-                            decoration: InputDecoration(
-                                hintText: "MOA Duration(months)",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Enter duration in months"),
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: websiteController,
+                          decoration: InputDecoration(
+                              hintText: "Enter Company Website",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Company Website"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Courses",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: locationController,
+                          decoration: InputDecoration(
+                            hintText: "Enter Company Location",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            labelText: "Company Location",
+                          ),
+                          minLines: 1,
+                          maxLines: 2,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: addressController,
+                          decoration: InputDecoration(
+                              hintText: "Enter Company Address",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Address"),
+                          minLines: 1,
+                          maxLines: 2,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        "Agreement Details",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: DropdownButtonFormField<String>(
+                          alignment: Alignment.bottomCenter,
+                          value: _internshipMode,
+                          decoration: InputDecoration(
+                            labelText: "Internship Mode",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                gapPadding: 4),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 16),
+                          ),
+                          items: internshipModes
+                              .map((mode) => DropdownMenuItem(
+                                    value: mode,
+                                    child: Text(mode),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _internshipMode = value;
+                            });
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: moaDurationController,
+                          decoration: InputDecoration(
+                              hintText: "MOA Duration(months)",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter duration in months"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Courses",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(height: 8),
-                              if (_isLoadingCourses)
-                                const Center(child: CircularProgressIndicator())
-                              else
-                                Wrap(
-                                  spacing: 8.0,
-                                  runSpacing: 8.0,
-                                  children: _courses.map((course) {
-                                    return FilterChip(
-                                      label: Text(course['name']),
-                                      selected: _selectedCourseIds
-                                          .contains(course['id']),
-                                      onSelected: (bool selected) {
-                                        setState(() {
-                                          if (selected) {
-                                            _selectedCourseIds
-                                                .add(course['id']);
-                                          } else {
-                                            _selectedCourseIds
-                                                .remove(course['id']);
-                                          }
-                                        });
-                                      },
-                                      selectedColor:
-                                          Theme.of(context).colorScheme.primary,
-                                      checkmarkColor: Colors.white,
-                                      labelStyle: TextStyle(
-                                        color: _selectedCourseIds
-                                                .contains(course['id'])
-                                            ? Colors.white
-                                            : null,
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 8),
+                            if (_isLoadingCourses)
+                              const Center(child: CircularProgressIndicator())
+                            else
+                              Wrap(
+                                spacing: 8.0,
+                                runSpacing: 8.0,
+                                children: _courses.map((course) {
+                                  return FilterChip(
+                                    label: Text(course['courseName']),
+                                    selected: _selectedCourseNames
+                                        .contains(course['courseName']),
+                                    onSelected: (bool selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          _selectedCourseNames
+                                              .add(course['courseName']);
+                                        } else {
+                                          _selectedCourseNames
+                                              .remove(course['courseName']);
+                                        }
+                                      });
+                                    },
+                                    selectedColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    checkmarkColor: Colors.white,
+                                    labelStyle: TextStyle(
+                                      color: _selectedCourseNames
+                                              .contains(course['courseName'])
+                                          ? Colors.white
+                                          : null,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                          ],
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24.0),
-                          child: Divider(),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        "Primary Contact",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: contactPersonController,
+                          decoration: InputDecoration(
+                              hintText: "Contact Person Name",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter Contact Person Name"),
                         ),
-                        const Text(
-                          "Primary Contact",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: contactDetailsController,
+                          decoration: InputDecoration(
+                              hintText: "Contact Details",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter Contact Details"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: contactPersonController,
-                            decoration: InputDecoration(
-                                hintText: "Contact Person Name",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Enter Contact Person Name"),
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: designationController,
+                          decoration: InputDecoration(
+                              hintText: "Designation",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter Designation"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: contactDetailsController,
-                            decoration: InputDecoration(
-                                hintText: "Contact Details",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Enter Contact Details"),
-                          ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        "Secondary Contact",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: contactPerson2Controller,
+                          decoration: InputDecoration(
+                              hintText: "Contact Person 2",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter Contact Person 2 Name"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: designationController,
-                            decoration: InputDecoration(
-                                hintText: "Designation",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Enter Designation"),
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24.0),
-                          child: Divider(),
-                        ),
-                        const Text(
-                          "Secondary Contact",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: TextField(
-                            controller: contactPerson2Controller,
-                            decoration: InputDecoration(
-                                hintText: "Contact Person 2",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                labelText: "Enter Contact Person 2 Name"),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-        ),
-      ),
+              ),
+            ),
     );
   }
 }
