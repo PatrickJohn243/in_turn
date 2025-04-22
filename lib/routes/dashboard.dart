@@ -83,7 +83,7 @@ class _DashboardState extends State<Dashboard> {
         index: currentPageIndex,
         children: [
           HomePage(
-            user: userProfile!,
+            user: userProfile,
             companies: fetchedCompanies,
             onTapSearch: setCurrentPageIndex,
           ),

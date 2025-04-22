@@ -9,12 +9,12 @@ import 'package:inturn/utils/constants/app_colors.dart';
 class HomePage extends StatefulWidget {
   final Function(int) onTapSearch;
   final List<Companies> companies;
-  final Users user;
+  final Users? user;
   const HomePage(
       {super.key,
       required this.onTapSearch,
       required this.companies,
-      required this.user});
+      this.user});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -79,7 +79,9 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hey ${widget.user.firstName}',
+                  widget.user == null
+                      ? 'Hey User'
+                      : 'Hey ${widget.user!.firstName}',
                   style: TextStyle(fontSize: 24),
                 ),
                 Text(
