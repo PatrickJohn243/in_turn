@@ -12,10 +12,10 @@ class UserFetching {
           .from('users')
           .select()
           .eq('userId', loggedUserId)
-          .single();
+          .maybeSingle();
 
       log(response.toString());
-      return Users.fromJson(response);
+      return Users.fromJson(response!);
     } catch (e) {
       log('$e');
       return null;

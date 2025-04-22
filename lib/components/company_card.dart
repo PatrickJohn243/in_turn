@@ -6,14 +6,11 @@ import 'package:inturn/views/company_info.dart';
 class CompanyCard extends StatefulWidget {
   final Companies company;
   final String imageUrl;
-  final String companyName;
-  final String category;
-  const CompanyCard(
-      {super.key,
-      required this.company,
-      required this.imageUrl,
-      required this.companyName,
-      required this.category});
+  const CompanyCard({
+    super.key,
+    required this.company,
+    required this.imageUrl,
+  });
 
   @override
   _CompanyCardState createState() => _CompanyCardState();
@@ -95,7 +92,7 @@ class _CompanyCardState extends State<CompanyCard> {
                               direction: Axis.horizontal,
                               children: [
                                 Text(
-                                  widget.category,
+                                  widget.company.fieldSpecialization,
                                   style: const TextStyle(
                                     fontSize: 14,
                                   ),

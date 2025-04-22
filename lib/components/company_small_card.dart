@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/views/company_info.dart';
 
 class CompanySmallCard extends StatefulWidget {
   final Companies company;
   final String imageUrl;
-  final String category;
 
-  const CompanySmallCard(
-      {super.key,
-      required this.company,
-      required this.imageUrl,
-      required this.category});
+  const CompanySmallCard({
+    super.key,
+    required this.company,
+    required this.imageUrl,
+  });
 
   @override
   _CompanySmallCardState createState() => _CompanySmallCardState();
@@ -23,7 +23,12 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => CompanyInfo(company: widget.company)));
+        },
         child: Ink(
           width: double.infinity,
           decoration: const BoxDecoration(),
@@ -97,7 +102,7 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
                                 padding: const EdgeInsetsDirectional.fromSTEB(
                                     0, 0, 12, 0),
                                 child: Text(
-                                  widget.category,
+                                  widget.company.fieldSpecialization,
                                   style: TextStyle(fontSize: 14),
                                 ),
                               ),

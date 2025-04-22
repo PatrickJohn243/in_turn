@@ -13,6 +13,8 @@ class Companies {
   final String address;
   final String collegeId;
   final List<String> applicableCourse;
+  final String description;
+  final String fieldSpecialization;
 
   Companies({
     required this.companyId,
@@ -29,6 +31,8 @@ class Companies {
     required this.address,
     required this.collegeId,
     required this.applicableCourse,
+    required this.description,
+    required this.fieldSpecialization,
   });
 
   factory Companies.fromJson(Map<String, dynamic> json) {
@@ -47,6 +51,8 @@ class Companies {
       address: json['address'],
       collegeId: json['collegeId'],
       applicableCourse: List<String>.from(json['applicableCourses'] ?? []),
+      description: json['description'],
+      fieldSpecialization: json['fieldSpecialization'],
     );
   }
 }

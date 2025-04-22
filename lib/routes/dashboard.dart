@@ -1,15 +1,19 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:inturn/main.dart';
 import 'package:inturn/models/companies.dart';
+import 'package:inturn/models/users.dart';
 import 'package:inturn/routes/admin_dashboard.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/view_models/companies_fetching.dart';
+import 'package:inturn/view_models/user_fetching.dart';
 import 'package:inturn/views/filter_page.dart';
 import 'package:inturn/views/home_page.dart';
 import 'package:inturn/views/profile_page.dart';
 import 'package:inturn/views/saved_page.dart';
 import 'package:inturn/views/search_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -20,6 +24,8 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int currentPageIndex = 0;
+  String userId = '';
+  Users? userProfile;
   List<Companies> fetchedCompanies = [];
 
   void setCurrentPageIndex(int pageIndex) {
@@ -28,11 +34,36 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
+  Future<void> fetchUser() async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      log('User is not logged in');
+      return;
+    }
+
+    try {
+      final profile = await UserFetching().fetchUser(user.id);
+
+      if (profile == null) {
+        log('No profile found for user id: ${user.id}');
+        return;
+      }
+
+      setState(() {
+        userProfile = profile;
+        // log("user: ${userProfile.toString()}");
+      });
+    } catch (e) {
+      log('Error fetching user: $e');
+    }
+  }
+
   Future<void> fetchAllCompanies() async {
     final companies = await CompaniesFetching().fetchCompanies();
     setState(() {
       fetchedCompanies = companies;
-      log(fetchedCompanies.length.toString());
+      // log(fetchedCompanies.length.toString());
     });
   }
 
@@ -41,6 +72,7 @@ class _DashboardState extends State<Dashboard> {
     // TODO: implement initState
     super.initState();
     fetchAllCompanies();
+    fetchUser();
   }
 
   @override
@@ -51,6 +83,7 @@ class _DashboardState extends State<Dashboard> {
         index: currentPageIndex,
         children: [
           HomePage(
+            user: userProfile!,
             companies: fetchedCompanies,
             onTapSearch: setCurrentPageIndex,
           ),

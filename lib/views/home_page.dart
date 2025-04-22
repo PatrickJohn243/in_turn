@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:inturn/components/company_card.dart';
 import 'package:inturn/components/company_small_card.dart';
 import 'package:inturn/models/companies.dart';
+import 'package:inturn/models/users.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 // import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int) onTapSearch;
   final List<Companies> companies;
+  final Users user;
   const HomePage(
-      {super.key, required this.onTapSearch, required this.companies});
+      {super.key,
+      required this.onTapSearch,
+      required this.companies,
+      required this.user});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -50,14 +55,8 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 2,
-                ),
-              ),
+
+              child: Image.asset("img/logo.png"),
               // child: Padding(
               //   padding: const EdgeInsets.all(2),
               //   child: ClipRRect(
@@ -80,12 +79,12 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hey Brent',
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  'Hey ${widget.user.firstName}',
+                  style: TextStyle(fontSize: 24),
                 ),
                 Text(
                   'Welcome to InTurn',
-                  style: Theme.of(context).textTheme.labelMedium,
+                  style: TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -165,8 +164,6 @@ class _HomePageState extends State<HomePage> {
                           company: company,
                           imageUrl:
                               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKC0njLfz3XNGfVScLEz0OkkReDXJzDvhXEA&s',
-                          companyName: 'Holysoft Studios Philippines',
-                          category: 'Game Dev',
                         ),
                       );
                     }).toList(),
@@ -216,7 +213,6 @@ class _HomePageState extends State<HomePage> {
                       company: company,
                       imageUrl:
                           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZq4dgIJBLfPGKBc7C0SgB8fr5akFvjwXRJg&s',
-                      category: 'BPO',
                     );
                   }).toList(),
                 ),
