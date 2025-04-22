@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 
 class EditCompany extends StatefulWidget {
-  const EditCompany({Key? key}) : super(key: key);
+  final Map<String, dynamic> companyData;
+
+  const EditCompany({
+    Key? key,
+    required this.companyData,
+  }) : super(key: key);
 
   @override
   _EditCompanyState createState() => _EditCompanyState();
@@ -12,40 +17,55 @@ class _EditCompanyState extends State<EditCompany> {
   String? _internshipMode;
   final List<String> internshipModes = ['Virtual', 'F2F', 'Combined'];
   late TextEditingController companyNameController;
+  late TextEditingController websiteController;
+  late TextEditingController locationController;
+  late TextEditingController addressController;
+  late TextEditingController moaDurationController;
+  late TextEditingController primaryContactNameController;
+  late TextEditingController primaryContactDetailsController;
+  late TextEditingController primaryContactDesignationController;
+  late TextEditingController secondaryContactNameController;
 
   @override
   void initState() {
     super.initState();
-    companyNameController = TextEditingController();
+    companyNameController =
+        TextEditingController(text: widget.companyData['companyName']);
+    websiteController =
+        TextEditingController(text: widget.companyData['website']);
+    locationController =
+        TextEditingController(text: widget.companyData['location']);
+    addressController =
+        TextEditingController(text: widget.companyData['address']);
+    moaDurationController =
+        TextEditingController(text: widget.companyData['moaDuration']);
+    primaryContactNameController =
+        TextEditingController(text: widget.companyData['primaryContactName']);
+    primaryContactDetailsController = TextEditingController(
+        text: widget.companyData['primaryContactDetails']);
+    primaryContactDesignationController = TextEditingController(
+        text: widget.companyData['primaryContactDesignation']);
+    secondaryContactNameController =
+        TextEditingController(text: widget.companyData['secondaryContactName']);
+    _internshipMode = widget.companyData['mode'];
   }
 
   @override
   void dispose() {
     companyNameController.dispose();
+    websiteController.dispose();
+    locationController.dispose();
+    addressController.dispose();
+    moaDurationController.dispose();
+    primaryContactNameController.dispose();
+    primaryContactDetailsController.dispose();
+    primaryContactDesignationController.dispose();
+    secondaryContactNameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    late FocusNode companyNameFocusNode;
-    @override
-    void initState() {
-      super.initState();
-      companyNameController = TextEditingController();
-      companyNameFocusNode = FocusNode();
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        companyNameFocusNode.requestFocus();
-      });
-    }
-
-    @override
-    void dispose() {
-      companyNameController.dispose();
-      companyNameFocusNode.dispose();
-      super.dispose();
-    }
-
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(color: AppColors.primary),
@@ -56,7 +76,7 @@ class _EditCompanyState extends State<EditCompany> {
             backgroundColor: AppColors.primary,
             iconTheme: const IconThemeData(color: Colors.white),
             title: const Text(
-              "Add Company",
+              "Edit Company",
               style:
                   TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
             ),
@@ -65,7 +85,6 @@ class _EditCompanyState extends State<EditCompany> {
             padding: const EdgeInsets.all(12.0),
             child: SingleChildScrollView(
               child: Column(
-                // mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -79,24 +98,33 @@ class _EditCompanyState extends State<EditCompany> {
                               border: Border.all(color: AppColors.shadow),
                               borderRadius: BorderRadius.circular(12),
                               color: Colors.white),
-                          child: const SizedBox(
+                          child: SizedBox(
                             height: 150,
                             width: 150,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_a_photo_rounded,
-                                  size: 40,
-                                ),
-                                SizedBox(height: 12),
-                                Text(
-                                  "Upload Company Photo",
-                                  textAlign: TextAlign.center,
-                                )
-                              ],
-                            ),
+                            child: widget.companyData['imageUrl'] != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      widget.companyData['imageUrl'],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo_rounded,
+                                        size: 40,
+                                      ),
+                                      SizedBox(height: 12),
+                                      Text(
+                                        "Change Company Photo",
+                                        textAlign: TextAlign.center,
+                                      )
+                                    ],
+                                  ),
                           ),
                         ),
                       ),
@@ -113,6 +141,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: companyNameController,
                       decoration: InputDecoration(
                           hintText: "Enter Company Name",
                           border: OutlineInputBorder(
@@ -123,6 +152,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: websiteController,
                       decoration: InputDecoration(
                           hintText: "Enter Company Website",
                           border: OutlineInputBorder(
@@ -133,6 +163,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: locationController,
                       decoration: InputDecoration(
                         hintText: "Enter Company Location",
                         border: OutlineInputBorder(
@@ -146,6 +177,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: addressController,
                       decoration: InputDecoration(
                           hintText: "Enter Company Address",
                           border: OutlineInputBorder(
@@ -164,9 +196,7 @@ class _EditCompanyState extends State<EditCompany> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      top: 24.0,
-                    ),
+                    padding: const EdgeInsets.only(top: 24.0),
                     child: DropdownButtonFormField<String>(
                       alignment: Alignment.bottomCenter,
                       value: _internshipMode,
@@ -194,6 +224,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: moaDurationController,
                       decoration: InputDecoration(
                           hintText: "MOA Duration(months)",
                           border: OutlineInputBorder(
@@ -212,6 +243,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: primaryContactNameController,
                       decoration: InputDecoration(
                           hintText: "Contact Person Name",
                           border: OutlineInputBorder(
@@ -222,6 +254,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: primaryContactDetailsController,
                       decoration: InputDecoration(
                           hintText: "Contact Details",
                           border: OutlineInputBorder(
@@ -232,6 +265,7 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: primaryContactDesignationController,
                       decoration: InputDecoration(
                           hintText: "Designation",
                           border: OutlineInputBorder(
@@ -250,11 +284,21 @@ class _EditCompanyState extends State<EditCompany> {
                   Padding(
                     padding: const EdgeInsets.only(top: 24.0),
                     child: TextField(
+                      controller: secondaryContactNameController,
                       decoration: InputDecoration(
                           hintText: "Contact Person 2",
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12)),
                           labelText: "Enter Contact Person 2 Name"),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // TODO: Implement save functionality
+                      },
+                      child: const Text('Save Changes'),
                     ),
                   ),
                 ],

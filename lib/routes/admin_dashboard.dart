@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/views/admin/add_company.dart';
+import 'package:inturn/views/admin/view_company.dart';
+import 'package:inturn/views/admin/edit_company_list.dart';
+import 'package:inturn/views/admin/delete_company.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -91,7 +94,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           child: InkWell(
                             splashColor: AppColors.splashColor,
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const DeleteCompany(),
+                                ),
+                              );
+                            },
                             child: Ink(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
@@ -138,7 +148,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           child: InkWell(
                             splashColor: AppColors.splashColor,
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const EditCompanyList(),
+                                ),
+                              );
+                            },
                             child: Ink(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
@@ -181,7 +198,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           child: InkWell(
                             splashColor: AppColors.splashColor,
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ViewCompanyPage(),
+                                ),
+                              );
+                            },
                             child: Ink(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
