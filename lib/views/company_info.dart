@@ -4,7 +4,8 @@ import 'package:inturn/utils/constants/app_colors.dart';
 
 class CompanyInfo extends StatefulWidget {
   final Companies company;
-  const CompanyInfo({super.key, required this.company});
+  final String imageUrl;
+  const CompanyInfo({super.key, required this.company, required this.imageUrl});
 
   @override
   _CompanyInfoState createState() => _CompanyInfoState();
@@ -38,12 +39,17 @@ class _CompanyInfoState extends State<CompanyInfo> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Padding(
-                      padding: EdgeInsets.all(20),
+                  SizedBox(
+                    height: 56,
+                    width: 56,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        widget.imageUrl,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   Row(
@@ -144,11 +150,10 @@ class _CompanyInfoState extends State<CompanyInfo> {
                     // border: Border.all(color: AppColors.primary, width: 2),
                     // color: const Color.fromARGB(255, 157, 194, 243)),
                     color: AppColors.lighterPrimary),
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.all(12.0),
                   child: Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore, "
-                    "magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    widget.company.description,
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
@@ -183,11 +188,18 @@ class _CompanyInfoState extends State<CompanyInfo> {
                             ),
                             maxLines: 2,
                           ),
-                          Container(
-                            padding: EdgeInsets.all(40),
-                            decoration: BoxDecoration(
-                                color: AppColors.secondaryGrey,
-                                borderRadius: BorderRadius.circular(12)),
+                          SizedBox(
+                            height: 84,
+                            width: 84,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                widget.imageUrl,
+                                fit: BoxFit.cover,
+                                height: double.infinity,
+                                width: double.infinity,
+                              ),
+                            ),
                           )
                         ],
                       ),

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/utils/constants/fetch_public_image_url.dart';
 import 'package:inturn/views/company_info.dart';
 
 class CompanyItem extends StatefulWidget {
@@ -14,10 +15,20 @@ class CompanyItem extends StatefulWidget {
 }
 
 class _CompanyItemState extends State<CompanyItem> {
+  String imageUrl = '';
   List<String> applicableCourses = [];
+
   Future<void> getAllApplicableCourses() async {
     applicableCourses = widget.company.applicableCourse.toList();
-    log(applicableCourses.length.toString());
+    // log(applicableCourses.length.toString());
+  }
+
+  void getImageUrl() async {
+    final url = getPublicImageUrl(widget.company.companyImage);
+    setState(() {
+      imageUrl = url;
+      // log(url);
+    });
   }
 
   @override
@@ -25,6 +36,7 @@ class _CompanyItemState extends State<CompanyItem> {
     // TODO: implement initState
     super.initState();
     getAllApplicableCourses();
+    getImageUrl();
   }
 
   @override
@@ -38,8 +50,10 @@ class _CompanyItemState extends State<CompanyItem> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        CompanyInfo(company: widget.company)));
+                    builder: (context) => CompanyInfo(
+                          company: widget.company,
+                          imageUrl: imageUrl,
+                        )));
           },
           borderRadius: BorderRadius.circular(12),
           child: Ink(
@@ -58,29 +72,17 @@ class _CompanyItemState extends State<CompanyItem> {
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
+                        SizedBox(
                           width: 56,
                           height: 56,
-                          decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).colorScheme.primaryContainer,
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.network(
-                                'https://picsum.photos/seed/287/600',
-                                // widget.company.companyImage,
-                                width: 24,
-                                height: 24,
-                                fit: BoxFit.cover,
-                                alignment: const Alignment(-1, 0),
-                              ),
+                            child: Image.network(
+                              imageUrl,
+                              // widget.company.companyImage,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),

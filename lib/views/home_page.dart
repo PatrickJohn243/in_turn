@@ -164,8 +164,6 @@ class _HomePageState extends State<HomePage> {
                             const EdgeInsetsDirectional.fromSTEB(0, 16, 12, 16),
                         child: CompanyCard(
                           company: company,
-                          imageUrl:
-                              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKC0njLfz3XNGfVScLEz0OkkReDXJzDvhXEA&s',
                         ),
                       );
                     }).toList(),
@@ -213,8 +211,6 @@ class _HomePageState extends State<HomePage> {
                   children: widget.companies.map((company) {
                     return CompanySmallCard(
                       company: company,
-                      imageUrl:
-                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZq4dgIJBLfPGKBc7C0SgB8fr5akFvjwXRJg&s',
                     );
                   }).toList(),
                 ),

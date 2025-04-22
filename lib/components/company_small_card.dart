@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/utils/constants/fetch_public_image_url.dart';
 import 'package:inturn/views/company_info.dart';
 
 class CompanySmallCard extends StatefulWidget {
   final Companies company;
-  final String imageUrl;
 
   const CompanySmallCard({
     super.key,
     required this.company,
-    required this.imageUrl,
   });
 
   @override
@@ -18,6 +17,22 @@ class CompanySmallCard extends StatefulWidget {
 }
 
 class _CompanySmallCardState extends State<CompanySmallCard> {
+  String imageUrl = '';
+  void getImageUrl() async {
+    final url = getPublicImageUrl(widget.company.companyImage);
+    setState(() {
+      imageUrl = url;
+      // log(url);
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getImageUrl();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -27,7 +42,10 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => CompanyInfo(company: widget.company)));
+                  builder: (context) => CompanyInfo(
+                        company: widget.company,
+                        imageUrl: imageUrl,
+                      )));
         },
         child: Ink(
           width: double.infinity,
@@ -52,7 +70,7 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
-                        widget.imageUrl,
+                        imageUrl,
                         width: 120,
                         height: 120,
                         fit: BoxFit.cover,

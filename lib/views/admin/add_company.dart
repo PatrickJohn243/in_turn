@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,7 +17,7 @@ class AddCompany extends StatefulWidget {
 class _AddCompanyState extends State<AddCompany> {
   final _supabase = Supabase.instance.client;
   String? _internshipMode;
-  final List<String> internshipModes = ['Virtual', 'F2F', 'Combined'];
+  final List<String> internshipModes = ['Remote', 'F2F', 'Blended'];
 
   // Course selection
   List<Map<String, dynamic>> _courses = [];
@@ -28,11 +30,15 @@ class _AddCompanyState extends State<AddCompany> {
   late TextEditingController locationController;
   late TextEditingController addressController;
   late TextEditingController moaDurationController;
-  late TextEditingController contactPersonController;
+
+  late TextEditingController contactPerson1Controller;
+  late TextEditingController contactPerson2Controller;
   late TextEditingController contactDetailsController;
   late TextEditingController designationController;
-  late TextEditingController contactPerson2Controller;
-  late TextEditingController collegeIdController;
+
+  late TextEditingController collegeController;
+  late TextEditingController descriptionController;
+  late TextEditingController fieldSpecializationController;
 
   String? _companyImageUrl;
   bool _isLoading = false;
@@ -46,11 +52,15 @@ class _AddCompanyState extends State<AddCompany> {
     locationController = TextEditingController();
     addressController = TextEditingController();
     moaDurationController = TextEditingController();
-    contactPersonController = TextEditingController();
+    collegeController = TextEditingController();
+
+    contactPerson1Controller = TextEditingController();
+    contactPerson2Controller = TextEditingController();
     contactDetailsController = TextEditingController();
     designationController = TextEditingController();
-    contactPerson2Controller = TextEditingController();
-    collegeIdController = TextEditingController();
+
+    descriptionController = TextEditingController();
+    fieldSpecializationController = TextEditingController();
     testConnection();
     _fetchCourses();
   }
@@ -62,11 +72,13 @@ class _AddCompanyState extends State<AddCompany> {
     locationController.dispose();
     addressController.dispose();
     moaDurationController.dispose();
-    contactPersonController.dispose();
+    contactPerson1Controller.dispose();
     contactDetailsController.dispose();
     designationController.dispose();
+    contactPerson1Controller.dispose();
     contactPerson2Controller.dispose();
-    collegeIdController.dispose();
+    descriptionController.dispose();
+    fieldSpecializationController.dispose();
     super.dispose();
   }
 
@@ -106,51 +118,66 @@ class _AddCompanyState extends State<AddCompany> {
     }
   }
 
-  Future<void> _uploadImage() async {
+  Future<void> uploadImage() async {
     try {
       setState(() {
         _isUploadingImage = true;
       });
 
-      // Pick an image file
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw Exception("User not authenticated");
+
       final result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
         withData: true,
-        withReadStream: false,
       );
 
       if (result != null && result.files.isNotEmpty) {
-        final file = File(result.files.first.path!);
-        final fileName =
-            '${DateTime.now().millisecondsSinceEpoch}${path.extension(file.path)}';
+        final pickedFile = result.files.first;
+        final bytes = pickedFile.bytes;
+        if (bytes == null) throw Exception("File is empty");
 
-        // Upload to Supabase Storage
-        await _supabase.storage.from('company_images').upload(fileName, file);
+        final userId = user.id;
+        final extension = path.extension(pickedFile.name); // e.g. .jpeg
+        final fileName = '$userId/user_image$extension';
+        final storagePath = fileName;
 
-        // Get the public URL
-        final imageUrl =
-            _supabase.storage.from('company_images').getPublicUrl(fileName);
+        final storageRef = _supabase.storage.from('images');
 
-        setState(() {
-          _companyImageUrl = imageUrl;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error uploading image: $e'),
-            backgroundColor: Colors.red,
+        // Upload the image file
+        final response = await storageRef.uploadBinary(
+          storagePath,
+          bytes,
+          fileOptions: const FileOptions(
+            upsert: true, // allows overwriting if same filename is used
           ),
         );
-      }
-    } finally {
-      if (mounted) {
+
+        if (response.isEmpty) throw Exception("Upload failed");
+
+        // Get the public URL
+        // final imageUrl = storageRef.getPublicUrl(storagePath);
+
         setState(() {
-          _isUploadingImage = false;
+          _companyImageUrl = fileName;
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Image uploaded successfully!')),
+        );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error uploading image: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isUploadingImage = false;
+      });
     }
   }
 
@@ -162,9 +189,9 @@ class _AddCompanyState extends State<AddCompany> {
       return;
     }
 
-    if (collegeIdController.text.isEmpty) {
+    if (collegeController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('College ID is required')),
+        const SnackBar(content: Text('College is required')),
       );
       return;
     }
@@ -175,8 +202,7 @@ class _AddCompanyState extends State<AddCompany> {
 
     try {
       // Convert selected course names to a comma-separated string
-      final applicableCourses = _selectedCourseNames.join(',');
-
+      final applicableCourses = _selectedCourseNames.toList();
       await _supabase.from('companies').insert({
         'companyName': companyNameController.text,
         'companyImage': _companyImageUrl,
@@ -185,14 +211,16 @@ class _AddCompanyState extends State<AddCompany> {
         'address': addressController.text,
         'mode': _internshipMode,
         'moaDuration': moaDurationController.text,
-        'contactPerson': contactPersonController.text,
+        'contactPerson': contactPerson1Controller.text,
+        'contactPerson2': contactPerson2Controller.text,
         'contactDetails': contactDetailsController.text,
         'designation': designationController.text,
-        'contactPerson2': contactPerson2Controller.text,
-        'collegeId': collegeIdController.text,
+        // 'college': collegeController.text,
         'applicableCourses': applicableCourses,
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
+        'description': descriptionController.text,
+        'fieldSpecialization': fieldSpecializationController.text,
       });
 
       if (mounted) {
@@ -272,7 +300,7 @@ class _AddCompanyState extends State<AddCompany> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: _isUploadingImage ? null : _uploadImage,
+                            onTap: _isUploadingImage ? null : uploadImage,
                             child: Ink(
                               decoration: BoxDecoration(
                                   border: Border.all(color: AppColors.shadow),
@@ -346,12 +374,12 @@ class _AddCompanyState extends State<AddCompany> {
                       Padding(
                         padding: const EdgeInsets.only(top: 24.0),
                         child: TextField(
-                          controller: collegeIdController,
+                          controller: collegeController,
                           decoration: InputDecoration(
-                              hintText: "Enter College ID",
+                              hintText: "Enter College",
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12)),
-                              labelText: "College ID"),
+                              labelText: "College"),
                         ),
                       ),
                       Padding(
@@ -473,14 +501,11 @@ class _AddCompanyState extends State<AddCompany> {
                                         }
                                       });
                                     },
-                                    selectedColor:
-                                        Theme.of(context).colorScheme.primary,
+                                    backgroundColor: AppColors.primary,
+                                    selectedColor: AppColors.primary,
                                     checkmarkColor: Colors.white,
-                                    labelStyle: TextStyle(
-                                      color: _selectedCourseNames
-                                              .contains(course['courseName'])
-                                          ? Colors.white
-                                          : null,
+                                    labelStyle: const TextStyle(
+                                      color: Colors.white,
                                     ),
                                   );
                                 }).toList(),
@@ -493,19 +518,30 @@ class _AddCompanyState extends State<AddCompany> {
                         child: Divider(),
                       ),
                       const Text(
-                        "Primary Contact",
+                        "Contact Personnel",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 24.0),
                         child: TextField(
-                          controller: contactPersonController,
+                          controller: contactPerson1Controller,
                           decoration: InputDecoration(
-                              hintText: "Contact Person Name",
+                              hintText: "Contact Person 1 Name",
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12)),
-                              labelText: "Enter Contact Person Name"),
+                              labelText: "Enter Contact Person 1 Name"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: contactPerson2Controller,
+                          decoration: InputDecoration(
+                              hintText: "Contact Person 2 Name",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter Contact Person 2 Name"),
                         ),
                       ),
                       Padding(
@@ -535,19 +571,30 @@ class _AddCompanyState extends State<AddCompany> {
                         child: Divider(),
                       ),
                       const Text(
-                        "Secondary Contact",
+                        "About Company",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 24.0),
                         child: TextField(
-                          controller: contactPerson2Controller,
+                          controller: descriptionController,
                           decoration: InputDecoration(
-                              hintText: "Contact Person 2",
+                              hintText: "Company Description",
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12)),
-                              labelText: "Enter Contact Person 2 Name"),
+                              labelText: "Enter Company Description"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: TextField(
+                          controller: fieldSpecializationController,
+                          decoration: InputDecoration(
+                              hintText: "Field Specialization",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              labelText: "Enter Field Specialization"),
                         ),
                       ),
                     ],
