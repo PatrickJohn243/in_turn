@@ -21,7 +21,6 @@ class _CompanyInfoState extends State<CompanyInfo> {
       Icons.phone: widget.company.contactDetails,
       Icons.person: widget.company.contactPerson,
       Icons.badge: widget.company.designation,
-      Icons.contact_page_rounded: widget.company.contactDetails,
       Icons.person_outline: widget.company.contactPerson2
     };
 

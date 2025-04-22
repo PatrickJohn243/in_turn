@@ -8,35 +8,36 @@ import 'package:inturn/view_models/companies_fetching.dart';
 // import 'package:google_fonts/google_fonts.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final List<Companies> companies;
+  const SearchPage({super.key, required this.companies});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
-  List<Companies> companies = [];
+  // List<Companies> companies = [];
   final scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? textController;
   FocusNode? textFieldFocusNode;
   String? choiceChipsValue;
   List<String> choiceChips = ['For You'];
-  int resultCount = 0;
+  // int resultCount = 0;
 
   @override
   void initState() {
     super.initState();
     textController = TextEditingController();
     textFieldFocusNode = FocusNode();
-    fetchAllCompanies();
+    // fetchAllCompanies();
   }
 
-  void fetchAllCompanies() async {
-    companies = await CompaniesFetching().fetchCompanies();
-    setState(() {
-      resultCount = companies.length.toInt();
-    });
-  }
+  // void fetchAllCompanies() async {
+  //   companies = await CompaniesFetching().fetchCompanies();
+  //   setState(() {
+  //     resultCount = companies.length.toInt();
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -138,6 +139,7 @@ class _SearchPageState extends State<SearchPage> {
                                   choiceChipsValue = selected ? chipName : null;
                                 });
                               },
+                              checkmarkColor: Colors.white,
                               selectedColor: AppColors.primary,
                               labelStyle: TextStyle(
                                 color: choiceChipsValue == chipName
@@ -166,7 +168,7 @@ class _SearchPageState extends State<SearchPage> {
                 Padding(
                   padding: EdgeInsetsDirectional.only(start: 16, top: 12),
                   child: Text(
-                    '$resultCount results for you',
+                    '${widget.companies.length} results for you',
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
@@ -176,7 +178,7 @@ class _SearchPageState extends State<SearchPage> {
                     padding: EdgeInsets.fromLTRB(0, 8, 0, 44),
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    children: companies
+                    children: widget.companies
                         .map((company) => CompanyItem(company: company))
                         .toList(),
                   ),

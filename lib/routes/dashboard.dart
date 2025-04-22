@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:inturn/models/companies.dart';
 import 'package:inturn/routes/admin_dashboard.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/view_models/companies_fetching.dart';
 import 'package:inturn/views/filter_page.dart';
 import 'package:inturn/views/home_page.dart';
 import 'package:inturn/views/profile_page.dart';
@@ -16,6 +20,29 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int currentPageIndex = 0;
+  List<Companies> fetchedCompanies = [];
+
+  void setCurrentPageIndex(int pageIndex) {
+    setState(() {
+      currentPageIndex = pageIndex;
+    });
+  }
+
+  Future<void> fetchAllCompanies() async {
+    final companies = await CompaniesFetching().fetchCompanies();
+    setState(() {
+      fetchedCompanies = companies;
+      log(fetchedCompanies.length.toString());
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchAllCompanies();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -23,8 +50,13 @@ class _DashboardState extends State<Dashboard> {
       body: IndexedStack(
         index: currentPageIndex,
         children: [
-          HomePage(),
-          SearchPage(),
+          HomePage(
+            companies: fetchedCompanies,
+            onTapSearch: setCurrentPageIndex,
+          ),
+          SearchPage(
+            companies: fetchedCompanies,
+          ),
           SavedPage(),
           ProfilePage(),
           AdminDashboard()
