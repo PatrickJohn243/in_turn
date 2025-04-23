@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/utils/constants/save_company.dart';
 
 class CompanyInfo extends StatefulWidget {
   final Companies company;
@@ -12,6 +13,7 @@ class CompanyInfo extends StatefulWidget {
 }
 
 class _CompanyInfoState extends State<CompanyInfo> {
+  bool isFavorite = false;
   @override
   Widget build(BuildContext context) {
     Map<IconData, String> details = {
@@ -54,33 +56,49 @@ class _CompanyInfoState extends State<CompanyInfo> {
                   ),
                   Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.shadow),
-                              borderRadius: BorderRadius.circular(40)),
-                          child: const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Icon(
-                              Icons.favorite,
-                              color: Colors.red,
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () {
+                            SaveCompany().addToSaves;
+                            setState(() {
+                              isFavorite = !isFavorite;
+                            });
+                          },
+                          child: Ink(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: AppColors.shadow),
+                                  borderRadius: BorderRadius.circular(40)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: isFavorite
+                                    ? Icon(
+                                        Icons.favorite_rounded,
+                                        color: Colors.red,
+                                      )
+                                    : Icon(Icons.favorite_border_rounded),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(
-                            widget.company.mode,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              widget.company.mode,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

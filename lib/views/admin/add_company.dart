@@ -140,7 +140,7 @@ class _AddCompanyState extends State<AddCompany> {
 
         final userId = user.id;
         final extension = path.extension(pickedFile.name); // e.g. .jpeg
-        final fileName = '$userId/user_image$extension';
+        final fileName = '$userId/${pickedFile.name}$extension';
         final storagePath = fileName;
 
         final storageRef = _supabase.storage.from('images');

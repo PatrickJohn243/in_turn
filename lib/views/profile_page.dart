@@ -65,7 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> getUser() async {
     final Users? profile = await UserFetching().fetchUser(userId);
     final Colleges collegeProfile =
-        await CollegeFetching().fetchCollege(profile!.collegeId);
+        await CollegeFetching().fetchCollegeById(profile!.collegeId);
     final Courses? courseProfile =
         await CoursesFetching().fetchCourse(profile.collegeId, profile.course);
     setState(() {

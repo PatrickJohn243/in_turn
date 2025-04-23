@@ -18,11 +18,29 @@ class CollegeFetching {
     }).toList();
   }
 
-  Future<Colleges> fetchCollege(String collegeId) async {
+  Future<Colleges> fetchCollegeById(String collegeId) async {
     final response = await supabase
         .from("colleges")
         .select()
         .eq("id", collegeId)
+        .maybeSingle();
+    log(response.toString());
+    if (response == null) {
+      throw Exception("College not found");
+    }
+
+    return Colleges(
+      id: response['id'],
+      college: response['college'],
+      description: response['description'],
+    );
+  }
+
+  Future<Colleges> fetchCollegeByName(String collegeName) async {
+    final response = await supabase
+        .from("colleges")
+        .select()
+        .eq("college", collegeName)
         .maybeSingle();
     log(response.toString());
     if (response == null) {
