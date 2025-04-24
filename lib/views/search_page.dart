@@ -24,6 +24,7 @@ class _SearchPageState extends State<SearchPage> {
   List<String> choiceChips = ['For You'];
   // int resultCount = 0;
 
+  void onTapFavorite() {}
   @override
   void initState() {
     super.initState();

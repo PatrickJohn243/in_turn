@@ -14,7 +14,7 @@ class UserFetching {
           .eq('userId', loggedUserId)
           .maybeSingle();
 
-      log(response.toString());
+      // log(response.toString());
       return Users.fromJson(response!);
     } catch (e) {
       log('$e');

@@ -24,7 +24,7 @@ class CollegeFetching {
         .select()
         .eq("id", collegeId)
         .maybeSingle();
-    log(response.toString());
+    // log(response.toString());
     if (response == null) {
       throw Exception("College not found");
     }
@@ -42,7 +42,7 @@ class CollegeFetching {
         .select()
         .eq("college", collegeName)
         .maybeSingle();
-    log(response.toString());
+    // log(response.toString());
     if (response == null) {
       throw Exception("College not found");
     }

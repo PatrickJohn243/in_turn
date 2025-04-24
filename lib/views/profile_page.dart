@@ -73,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> {
         userProfile = profile;
         userCollege = collegeProfile;
         userCourse = courseProfile;
-        log(userCollege.toString());
+        // log(userCollege.toString());
       }
     });
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:inturn/provider/favorites_provider.dart';
 import 'package:inturn/routes/dashboard.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:file_picker/file_picker.dart';
@@ -11,7 +13,14 @@ void main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['ANON_KEY'] ?? '',
   );
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => FavoritesProvider())
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 final supabase = Supabase.instance.client;
