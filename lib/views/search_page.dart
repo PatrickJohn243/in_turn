@@ -1,8 +1,12 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:inturn/components/company_item.dart';
+import 'package:inturn/main.dart';
 import 'package:inturn/models/companies.dart';
+import 'package:inturn/models/courses.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/view_models/companies_fetching.dart';
 // import 'package:google_fonts/google_fonts.dart';
@@ -16,13 +20,18 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  // List<Companies> companies = [];
+  List<Companies> filteredCompanies = [];
   final scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? textController;
   FocusNode? textFieldFocusNode;
-  String? choiceChipsValue;
-  List<String> choiceChips = ['For You'];
-  // int resultCount = 0;
+  // List<String> choiceChips = [];
+  List<Courses> coursesChipsSelected = [];
+  List<Courses> coursesChips = [];
+  Timer? _debounce;
+  int resultCount = 0;
+  String searchQuery = '';
+
+  get response => null;
 
   void onTapFavorite() {}
   @override
@@ -30,20 +39,54 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     textController = TextEditingController();
     textFieldFocusNode = FocusNode();
+    fetchCourses();
+    setInitialCompanyList();
     // fetchAllCompanies();
+    setState(() {
+      resultCount = widget.companies.length;
+    });
   }
 
-  // void fetchAllCompanies() async {
-  //   companies = await CompaniesFetching().fetchCompanies();
-  //   setState(() {
-  //     resultCount = companies.length.toInt();
-  //   });
-  // }
+  void setInitialCompanyList() async {
+    setState(() {
+      filteredCompanies = widget.companies;
+    });
+  }
+
+  void fetchCourses() async {
+    try {
+      final response = await supabase.from("courses").select();
+      setState(() {
+        coursesChips = response.map((json) => Courses.fromJson(json)).toList();
+        // log("courses length: ${coursesChips.length}");
+      });
+    } catch (e) {
+      log("$e");
+    }
+  }
+
+  void sendSearchQueryByInterval(String value) async {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      // log('Search query: $value');
+      searchFetching(value, coursesChips);
+    });
+  }
+
+  void searchFetching(String value, List<Courses> coursesChipsSelected) async {
+    final fetchedFilteredCompanies = await CompaniesFetching()
+        .fetchBySearchAndCourse(value, coursesChipsSelected);
+    setState(() {
+      filteredCompanies = fetchedFilteredCompanies;
+      resultCount = filteredCompanies.length;
+    });
+  }
 
   @override
   void dispose() {
     textController?.dispose();
     textFieldFocusNode?.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -64,9 +107,11 @@ class _SearchPageState extends State<SearchPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(16, 16, 16, 8),
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 8),
                   child: TextFormField(
                     controller: textController,
+                    onChanged: (value) =>
+                        {sendSearchQueryByInterval(value), searchQuery = value},
                     focusNode: textFieldFocusNode,
                     autofocus: true,
                     obscureText: false,
@@ -103,7 +148,7 @@ class _SearchPageState extends State<SearchPage> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       contentPadding:
-                          EdgeInsetsDirectional.fromSTEB(20, 0, 0, 0),
+                          const EdgeInsetsDirectional.fromSTEB(20, 0, 0, 0),
                       suffixIcon: Icon(
                         Icons.search_rounded,
                         color: Theme.of(context).textTheme.bodySmall?.color,
@@ -118,40 +163,38 @@ class _SearchPageState extends State<SearchPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 8, 0, 8),
+                        padding:
+                            const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 8),
                         child: Wrap(
                           spacing: 8.0,
                           runSpacing: 12.0,
-                          children: [
-                            'For You',
-                            'Engineering',
-                            'Hotel and Restaurant',
-                            'Technology',
-                            'Ai News',
-                            'Startups'
-                          ].map((chipName) {
+                          children: coursesChips.map((chip) {
                             return ChoiceChip(
-                              label: Text(chipName),
-                              selected: choiceChipsValue == chipName,
+                              label: Text(chip.courseName),
+                              selected: coursesChipsSelected.any((selected) =>
+                                  selected.courseName == chip.courseName),
                               onSelected: (selected) {
                                 setState(() {
-                                  choiceChipsValue = selected ? chipName : null;
+                                  if (selected) {
+                                    coursesChipsSelected.add(chip);
+                                  } else {
+                                    coursesChipsSelected.removeWhere(
+                                        (c) => c.courseName == chip.courseName);
+                                  }
+                                  searchFetching(
+                                      searchQuery, coursesChipsSelected);
                                 });
                               },
                               checkmarkColor: Colors.white,
                               selectedColor: AppColors.primary,
                               labelStyle: TextStyle(
-                                color: choiceChipsValue == chipName
+                                color: coursesChipsSelected.any((selected) =>
+                                        selected.courseName == chip.courseName)
                                     ? Colors.white
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color,
+                                    : AppColors.primaryGrey,
                               ),
-                              // backgroundColor:
-                              //     Appco,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -159,27 +202,27 @@ class _SearchPageState extends State<SearchPage> {
                           }).toList(),
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                     ],
                   ),
                 ),
-                Divider(
+                const Divider(
                   thickness: 1,
                 ),
                 Padding(
-                  padding: EdgeInsetsDirectional.only(start: 16, top: 12),
+                  padding: const EdgeInsetsDirectional.only(start: 16, top: 12),
                   child: Text(
-                    '${widget.companies.length} results for you',
+                    '$resultCount results for you',
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: ListView(
-                    padding: EdgeInsets.fromLTRB(0, 8, 0, 44),
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 44),
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    children: widget.companies
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: filteredCompanies
                         .map((company) => CompanyItem(company: company))
                         .toList(),
                   ),

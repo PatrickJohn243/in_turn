@@ -16,7 +16,7 @@ class SaveCompany {
           .select()
           .single();
 
-      log("Saved: $response");
+      // log("Saved: $response");
     } catch (e) {
       log("$e");
     }
@@ -31,7 +31,7 @@ class SaveCompany {
           .delete()
           .eq('companyId', companyId)
           .eq('userId', user!.id);
-      log("removed: $response");
+      // log("removed: $response");
     } catch (e) {
       log("$e");
     }

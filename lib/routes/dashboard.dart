@@ -27,6 +27,7 @@ class _DashboardState extends State<Dashboard> {
   String userId = '';
   Users? userProfile;
   List<Companies> fetchedCompanies = [];
+  String role = '';
 
   void setCurrentPageIndex(int pageIndex) {
     setState(() {
@@ -52,6 +53,7 @@ class _DashboardState extends State<Dashboard> {
 
       setState(() {
         userProfile = profile;
+        role = profile.role;
         // log("user: ${userProfile.toString()}");
       });
     } catch (e) {
@@ -77,6 +79,12 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    if (fetchedCompanies.isEmpty) {
+      // You can show a loader or splash until the data is ready
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return SafeArea(
         child: Scaffold(
       body: IndexedStack(
@@ -92,7 +100,6 @@ class _DashboardState extends State<Dashboard> {
           ),
           SavedPage(),
           ProfilePage(),
-          AdminDashboard()
         ],
       ),
       bottomNavigationBar: NavigationBarTheme(

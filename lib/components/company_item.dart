@@ -32,6 +32,14 @@ class _CompanyItemState extends State<CompanyItem> {
   }
 
   @override
+  void didUpdateWidget(covariant CompanyItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.company != widget.company) {
+      getImageUrl(); // Re-fetch the image URL when the company changes
+    }
+  }
+
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
