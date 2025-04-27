@@ -90,8 +90,8 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Profile",
+                Text(
+                  userProfile?.role == "Admin" ? "Admin Profile" : "Profile",
                   style: TextStyle(
                       fontSize: 28,
                       color: Colors.black,

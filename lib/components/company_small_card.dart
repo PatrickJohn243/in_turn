@@ -27,6 +27,14 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
   }
 
   @override
+  void didUpdateWidget(covariant CompanySmallCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.company != widget.company) {
+      getImageUrl();
+    }
+  }
+
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();

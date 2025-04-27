@@ -35,7 +35,7 @@ class _CompanyItemState extends State<CompanyItem> {
   void didUpdateWidget(covariant CompanyItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.company != widget.company) {
-      getImageUrl(); // Re-fetch the image URL when the company changes
+      getImageUrl();
     }
   }
 

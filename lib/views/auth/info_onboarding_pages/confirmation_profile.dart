@@ -71,9 +71,9 @@ class _ConfirmationProfileState extends State<ConfirmationProfile> {
                           fontSize: 30,
                           decoration: TextDecoration.underline,
                         )),
-                    const TextSpan(
-                        text: ", a ",
-                        style: TextStyle(
+                    TextSpan(
+                        text: widget.role == "Student" ? ", a " : ", an ",
+                        style: const TextStyle(
                             color: AppColors.primaryGrey, fontSize: 30)),
                     TextSpan(
                         text: widget.role,
@@ -95,8 +95,10 @@ class _ConfirmationProfileState extends State<ConfirmationProfile> {
                           fontSize: 30,
                           decoration: TextDecoration.underline,
                         )),
-                    const TextSpan(
-                        text: ",\nenrolled in ",
+                    TextSpan(
+                        text: widget.role == "Admin"
+                            ? ",\nadministrating in "
+                            : ",\nenrolled in ",
                         style: TextStyle(
                             color: AppColors.primaryGrey, fontSize: 30)),
                     TextSpan(

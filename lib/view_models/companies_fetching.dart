@@ -58,7 +58,7 @@ class CompaniesFetching {
     try {
       var query = supabase.from('companies').select();
 
-      if (value.isNotEmpty) {
+      if (value.isNotEmpty || value == '') {
         // log("search by query");
         query = query.ilike('companyName', '%$value%');
       }

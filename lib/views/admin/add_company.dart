@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:inturn/models/colleges.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/view_models/college_fetching.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -41,6 +43,8 @@ class _AddCompanyState extends State<AddCompany> {
   late TextEditingController fieldSpecializationController;
 
   String? _companyImageUrl;
+  File? companyImg;
+  Colleges? college;
   bool _isLoading = false;
   bool _isUploadingImage = false;
 
@@ -82,6 +86,14 @@ class _AddCompanyState extends State<AddCompany> {
     super.dispose();
   }
 
+  void fetchCollege(String collegeName) async {
+    // log(collegeName);
+    final response = await CollegeFetching().fetchCollegeByName(collegeName);
+    setState(() {
+      college = response;
+    });
+  }
+
   Future<void> _fetchCourses() async {
     try {
       setState(() {
@@ -93,10 +105,6 @@ class _AddCompanyState extends State<AddCompany> {
           .select()
           .order('courseName')
           .timeout(const Duration(seconds: 10));
-
-      if (response == null) {
-        throw Exception('No courses found');
-      }
 
       setState(() {
         _courses = List<Map<String, dynamic>>.from(response);
@@ -139,9 +147,9 @@ class _AddCompanyState extends State<AddCompany> {
         if (bytes == null) throw Exception("File is empty");
 
         final userId = user.id;
-        final extension = path.extension(pickedFile.name); // e.g. .jpeg
-        final fileName = '$userId/${pickedFile.name}$extension';
+        final fileName = '$userId/${pickedFile.name}';
         final storagePath = fileName;
+        final filePath = pickedFile.path;
 
         final storageRef = _supabase.storage.from('images');
 
@@ -161,6 +169,7 @@ class _AddCompanyState extends State<AddCompany> {
 
         setState(() {
           _companyImageUrl = fileName;
+          companyImg = File(filePath!);
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -182,6 +191,8 @@ class _AddCompanyState extends State<AddCompany> {
   }
 
   Future<void> _saveCompany() async {
+    fetchCollege(collegeController.text);
+
     if (companyNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Company name is required')),
@@ -201,7 +212,6 @@ class _AddCompanyState extends State<AddCompany> {
     });
 
     try {
-      // Convert selected course names to a comma-separated string
       final applicableCourses = _selectedCourseNames.toList();
       await _supabase.from('companies').insert({
         'companyName': companyNameController.text,
@@ -215,7 +225,7 @@ class _AddCompanyState extends State<AddCompany> {
         'contactPerson2': contactPerson2Controller.text,
         'contactDetails': contactDetailsController.text,
         'designation': designationController.text,
-        // 'college': collegeController.text,
+        'collegeId': college!.id,
         'applicableCourses': applicableCourses,
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
@@ -254,12 +264,8 @@ class _AddCompanyState extends State<AddCompany> {
           .limit(1)
           .timeout(const Duration(seconds: 5));
 
-      if (response != null) {
-        debugPrint('✅ Connected to Supabase. Course data received.');
-        debugPrint('Response: $response');
-      } else {
-        debugPrint('❌ No response received from Supabase');
-      }
+      debugPrint('✅ Connected to Supabase. Course data received.');
+      debugPrint('Response: $response');
     } catch (e, stackTrace) {
       debugPrint('❌ Supabase connection failed: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -323,8 +329,10 @@ class _AddCompanyState extends State<AddCompany> {
                                             ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12),
-                                              child: Image.network(
-                                                _companyImageUrl!,
+                                              child: Image.file(
+                                                companyImg!,
+                                                // Image.network(
+                                                //   _companyImageUrl!,
                                                 height: 100,
                                                 width: 100,
                                                 fit: BoxFit.cover,

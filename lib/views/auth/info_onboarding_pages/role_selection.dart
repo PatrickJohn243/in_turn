@@ -85,10 +85,11 @@ class RoleSelection extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const AdminProfile()));
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) => const AdminProfile()));
+                          onContinue("Admin");
                         },
                         borderRadius:
                             BorderRadius.circular(12), // Set the border radius

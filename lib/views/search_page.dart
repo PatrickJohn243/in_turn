@@ -189,12 +189,8 @@ class _SearchPageState extends State<SearchPage> {
                               },
                               checkmarkColor: Colors.white,
                               selectedColor: AppColors.primary,
-                              labelStyle: TextStyle(
-                                color: coursesChipsSelected.any((selected) =>
-                                        selected.courseName == chip.courseName)
-                                    ? Colors.white
-                                    : AppColors.primaryGrey,
-                              ),
+                              backgroundColor: AppColors.primary,
+                              labelStyle: TextStyle(color: Colors.white),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),

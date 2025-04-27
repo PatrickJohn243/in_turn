@@ -90,16 +90,24 @@ class _DashboardState extends State<Dashboard> {
       body: IndexedStack(
         index: currentPageIndex,
         children: [
-          HomePage(
-            user: userProfile,
-            companies: fetchedCompanies,
-            onTapSearch: setCurrentPageIndex,
-          ),
-          SearchPage(
-            companies: fetchedCompanies,
-          ),
-          SavedPage(),
-          ProfilePage(),
+          if (userProfile?.role == "Student") ...[
+            HomePage(
+              user: userProfile,
+              companies: fetchedCompanies,
+              onTapSearch: setCurrentPageIndex,
+            ),
+            SearchPage(
+              companies: fetchedCompanies,
+            ),
+            SavedPage(),
+            ProfilePage(),
+          ] else ...[
+            AdminDashboard(),
+            SearchPage(
+              companies: fetchedCompanies,
+            ),
+            ProfilePage(),
+          ]
         ],
       ),
       bottomNavigationBar: NavigationBarTheme(
@@ -116,64 +124,91 @@ class _DashboardState extends State<Dashboard> {
             });
           },
           selectedIndex: currentPageIndex,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(
-                Icons.business_center_outlined,
-                color: AppColors.primaryGrey,
+          destinations: [
+            if (userProfile?.role == "Student") ...[
+              NavigationDestination(
+                icon: Icon(
+                  Icons.business_center_outlined,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Companies',
+                selectedIcon: Icon(
+                  Icons.business_center_rounded,
+                  color: AppColors.primary,
+                ),
               ),
-              label: 'Companies',
-              selectedIcon: Icon(
-                Icons.business_center_rounded,
-                color: AppColors.primary,
+              NavigationDestination(
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primaryGrey,
+                  size: 24,
+                ),
+                label: 'Search',
+                selectedIcon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
               ),
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.search_rounded,
-                color: AppColors.primaryGrey,
-                size: 24,
+              NavigationDestination(
+                icon: Icon(
+                  Icons.favorite_border_rounded,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Saved',
+                selectedIcon: Icon(
+                  Icons.favorite_rounded,
+                  color: AppColors.primary,
+                ),
               ),
-              label: 'Search',
-              selectedIcon: Icon(
-                Icons.search_rounded,
-                color: AppColors.primary,
-                size: 28,
+              NavigationDestination(
+                icon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Profile',
+                selectedIcon: Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                ),
               ),
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.favorite_border_rounded,
-                color: AppColors.primaryGrey,
+            ] else ...[
+              NavigationDestination(
+                icon: Icon(
+                  Icons.business_center_outlined,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Companies',
+                selectedIcon: Icon(
+                  Icons.business_center_rounded,
+                  color: AppColors.primary,
+                ),
               ),
-              label: 'Saved',
-              selectedIcon: Icon(
-                Icons.favorite_rounded,
-                color: AppColors.primary,
+              NavigationDestination(
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primaryGrey,
+                  size: 24,
+                ),
+                label: 'Search',
+                selectedIcon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
               ),
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.person_outline,
-                color: AppColors.primaryGrey,
+              NavigationDestination(
+                icon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Profile',
+                selectedIcon: Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                ),
               ),
-              label: 'Profile',
-              selectedIcon: Icon(
-                Icons.person,
-                color: AppColors.primary,
-              ),
-            ),
-            NavigationDestination(
-              icon: Icon(
-                Icons.person_outline,
-                color: AppColors.primaryGrey,
-              ),
-              label: 'Admin',
-              selectedIcon: Icon(
-                Icons.person,
-                color: AppColors.primary,
-              ),
-            ),
+            ]
           ],
         ),
       ),

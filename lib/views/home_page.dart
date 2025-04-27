@@ -1,9 +1,14 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:inturn/components/company_card.dart';
 import 'package:inturn/components/company_small_card.dart';
 import 'package:inturn/models/companies.dart';
+import 'package:inturn/models/courses.dart';
 import 'package:inturn/models/users.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/view_models/companies_fetching.dart';
+import 'package:inturn/view_models/courses_fetching.dart';
 // import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,6 +30,31 @@ class _HomePageState extends State<HomePage> {
   FocusNode? textFieldFocusNode;
   String? choiceChipsValue;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  List<Courses> courses = [];
+  List<Courses> selectedCourses = [];
+  List<Companies> filteredCompanies = [];
+
+  void fetchCourses(String collegeId) async {
+    final fetchedCourses = await CoursesFetching().fetchCourses(collegeId);
+
+    setState(() {
+      courses = fetchedCourses;
+    });
+  }
+
+  void searchFetching(List<Courses> coursesChipsSelected) async {
+    final fetchedFilteredCompanies = await CompaniesFetching()
+        .fetchBySearchAndCourse('', coursesChipsSelected);
+    setState(() {
+      filteredCompanies = fetchedFilteredCompanies;
+    });
+  }
+
+  void setInitialCompanies(List<Companies> companies) {
+    setState(() {
+      filteredCompanies = companies;
+    });
+  }
 
   @override
   void initState() {
@@ -32,6 +62,8 @@ class _HomePageState extends State<HomePage> {
     textController = TextEditingController();
     textFieldFocusNode = FocusNode();
     choiceChipsValue = 'BSCS';
+    fetchCourses(widget.user!.collegeId);
+    setInitialCompanies(widget.companies);
   }
 
   @override
@@ -55,20 +87,7 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               width: 44,
               height: 44,
-
               child: Image.asset("img/logo.png"),
-              // child: Padding(
-              //   padding: const EdgeInsets.all(2),
-              //   child: ClipRRect(
-              //     borderRadius: BorderRadius.circular(50),
-              //     child: Image.network(
-              //       'https://media.licdn.com/dms/image/v2/D5603AQEovRV8ocp-tg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1728179878874?e=2147483647&v=beta&t=8NKFhkZH0e8fkxkFR1MmVjD6Qr_6b_jTtdoFHna9km8',
-              //       width: 300,
-              //       height: 200,
-              //       fit: BoxFit.cover,
-              //     ),
-              //   ),
-              // ),
             ),
           ),
           backgroundColor: Colors.white,
@@ -208,7 +227,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  children: widget.companies.map((company) {
+                  children: filteredCompanies.map((company) {
                     return CompanySmallCard(
                       company: company,
                     );
@@ -223,38 +242,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildChoiceChips() {
-    final chips = [
-      'BS in Computer Science',
-      'BS in Information Technology',
-      'BS in Entertainment and Multimedia Computing',
-      'ENCE',
-      'BSFT',
-      'EE'
-    ];
+    final List<Courses> courseChips = courses.map((course) => course).toList();
 
     return Wrap(
       spacing: 8.0,
-      children: chips.map((String name) {
+      children: courseChips.map((chip) {
         return ChoiceChip(
-          label: Text(name),
-          selected: choiceChipsValue == name,
+          label: Text(chip.courseName),
+          selected: selectedCourses
+              .any((selected) => selected.courseName == chip.courseName),
           onSelected: (bool selected) {
             setState(() {
-              choiceChipsValue = selected ? name : null;
+              if (selected) {
+                selectedCourses.add(chip);
+              } else {
+                selectedCourses
+                    .removeWhere((c) => c.courseName == chip.courseName);
+              }
+              searchFetching(selectedCourses);
             });
           },
           backgroundColor: AppColors.primary,
           selectedColor: AppColors.primary,
           checkmarkColor: Colors.white,
-          labelStyle: TextStyle(
-              color: choiceChipsValue == name ? Colors.white : Colors.white),
+          labelStyle: const TextStyle(color: Colors.white),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: choiceChipsValue == name
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.surfaceVariant,
-            ),
           ),
         );
       }).toList(),
