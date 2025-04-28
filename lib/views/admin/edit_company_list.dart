@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:inturn/components/company_item.dart';
+import 'package:inturn/models/companies.dart';
 import 'package:inturn/views/admin/edit_company.dart';
 
 class EditCompanyList extends StatefulWidget {
@@ -11,7 +13,7 @@ class EditCompanyList extends StatefulWidget {
 
 class _EditCompanyListState extends State<EditCompanyList> {
   final _supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> _companies = [];
+  List<Companies> _companies = [];
   bool _loading = true;
   String? _error;
 
@@ -34,7 +36,8 @@ class _EditCompanyListState extends State<EditCompanyList> {
           .order('created_at', ascending: false);
 
       setState(() {
-        _companies = List<Map<String, dynamic>>.from(response);
+        _companies =
+            (response as List).map((data) => Companies.fromJson(data)).toList();
         _loading = false;
       });
     } catch (error) {
@@ -43,6 +46,17 @@ class _EditCompanyListState extends State<EditCompanyList> {
         _loading = false;
       });
     }
+  }
+
+  void _navigateToEditCompany(Companies company) {
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => EditCompany(
+    //       companyData: company,
+    //     ),
+    //   ),
+    // );
   }
 
   @override
@@ -72,39 +86,22 @@ class _EditCompanyListState extends State<EditCompanyList> {
                 )
               : _companies.isEmpty
                   ? const Center(child: Text('No companies found'))
-                  : RefreshIndicator(
-                      onRefresh: _fetchCompanies,
-                      child: ListView.builder(
-                        itemCount: _companies.length,
-                        itemBuilder: (context, index) {
-                          final company = _companies[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              radius: 25,
-                              backgroundImage: company['imageUrl'] != null
-                                  ? NetworkImage(company['imageUrl'])
-                                  : null,
-                              child: company['imageUrl'] == null
-                                  ? const Icon(Icons.business, size: 25)
-                                  : null,
-                            ),
-                            title: Text(
-                                company['companyName'] ?? 'Unnamed Company'),
-                            subtitle: Text(
-                              '${company['location'] ?? 'No location'} • ${company['mode'] ?? 'N/A'}',
-                            ),
-                            trailing: const Icon(Icons.edit),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      EditCompany(companyData: company),
-                                ),
-                              );
-                            },
-                          );
-                        },
+                  : Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: RefreshIndicator(
+                        onRefresh: _fetchCompanies,
+                        child: ListView.builder(
+                          itemCount: _companies.length,
+                          itemBuilder: (context, index) {
+                            final company = _companies[index];
+                            return GestureDetector(
+                              onTap: () => _navigateToEditCompany(company),
+                              child: CompanyItem(
+                                company: company,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
     );
