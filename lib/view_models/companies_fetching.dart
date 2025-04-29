@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'package:inturn/models/adminCompanies.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/models/courses.dart';
 import 'package:inturn/models/savedCompanies.dart';
@@ -87,6 +89,22 @@ class CompaniesFetching {
     } catch (e) {
       log("Error fetching saved companies: $e");
       return [];
+    }
+  }
+
+  Future<List<AdminCompanies>> fetchAdminCreatedCompanies(
+      String adminId, String companyId) async {
+    try {
+      final response = await supabase
+          .from("companiesByAdmin")
+          .select()
+          .eq('adminId', adminId);
+      return (response as List<dynamic>)
+          .map((company) =>
+              AdminCompanies.fromJson(company as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw Exception("$e");
     }
   }
 }

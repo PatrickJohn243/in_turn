@@ -1,9 +1,13 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:inturn/models/adminCompanies.dart';
 import 'package:inturn/models/colleges.dart';
+import 'package:inturn/models/courses.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/view_models/college_fetching.dart';
+import 'package:inturn/view_models/courses_fetching.dart';
+import 'package:inturn/view_models/insert_company.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -17,35 +21,41 @@ class AddCompany extends StatefulWidget {
 }
 
 class _AddCompanyState extends State<AddCompany> {
-  final _supabase = Supabase.instance.client;
-  String? _internshipMode;
-  final List<String> internshipModes = ['Remote', 'F2F', 'Blended'];
-
-  // Course selection
-  List<Map<String, dynamic>> _courses = [];
-  Set<String> _selectedCourseNames = {};
-  bool _isLoadingCourses = true;
-
   // Controllers for all text fields
   late TextEditingController companyNameController;
   late TextEditingController websiteController;
   late TextEditingController locationController;
   late TextEditingController addressController;
-  late TextEditingController moaDurationController;
 
   late TextEditingController contactPerson1Controller;
   late TextEditingController contactPerson2Controller;
   late TextEditingController contactDetailsController;
   late TextEditingController designationController;
 
-  late TextEditingController collegeController;
   late TextEditingController descriptionController;
   late TextEditingController fieldSpecializationController;
 
+  final supabase = Supabase.instance.client;
+  User? user;
+
+  //Internship selection
+  String? selectedMode;
+  final List<String> internshipModes = ['Remote', 'F2F', 'Blended'];
+
+  //College selection
+  List<Colleges> collegeList = [];
+  Colleges? college;
+  Colleges? selectedCollege;
+
+  // Course selection
+  List<Courses> _courses = [];
+  Set<String> _selectedCourseNames = {};
+  bool _isLoadingCourses = true;
+  bool _isLoading = false;
+
   String? _companyImageUrl;
   File? companyImg;
-  Colleges? college;
-  bool _isLoading = false;
+  FilePickerResult? selectedImage;
   bool _isUploadingImage = false;
 
   @override
@@ -55,8 +65,6 @@ class _AddCompanyState extends State<AddCompany> {
     websiteController = TextEditingController();
     locationController = TextEditingController();
     addressController = TextEditingController();
-    moaDurationController = TextEditingController();
-    collegeController = TextEditingController();
 
     contactPerson1Controller = TextEditingController();
     contactPerson2Controller = TextEditingController();
@@ -65,8 +73,9 @@ class _AddCompanyState extends State<AddCompany> {
 
     descriptionController = TextEditingController();
     fieldSpecializationController = TextEditingController();
-    testConnection();
-    _fetchCourses();
+
+    fetchColleges();
+    user = supabase.auth.currentUser;
   }
 
   @override
@@ -75,43 +84,46 @@ class _AddCompanyState extends State<AddCompany> {
     websiteController.dispose();
     locationController.dispose();
     addressController.dispose();
-    moaDurationController.dispose();
     contactPerson1Controller.dispose();
     contactDetailsController.dispose();
     designationController.dispose();
-    contactPerson1Controller.dispose();
     contactPerson2Controller.dispose();
     descriptionController.dispose();
     fieldSpecializationController.dispose();
     super.dispose();
   }
 
-  void fetchCollege(String collegeName) async {
-    // log(collegeName);
+  Future<List<Colleges>> fetchColleges() async {
+    final response = await CollegeFetching().fetchColleges();
+    setState(() {
+      collegeList = response;
+    });
+    return response;
+  }
+
+  //fetch individual college
+  Future<void> fetchCollege(String collegeName) async {
     final response = await CollegeFetching().fetchCollegeByName(collegeName);
     setState(() {
       college = response;
+      log(college!.college);
     });
   }
 
-  Future<void> _fetchCourses() async {
+  Future<void> fetchCourses(String collegeId) async {
     try {
       setState(() {
         _isLoadingCourses = true;
       });
-
-      final response = await _supabase
-          .from('courses')
-          .select()
-          .order('courseName')
-          .timeout(const Duration(seconds: 10));
+      final response = await CoursesFetching().fetchCourses(collegeId);
+      log(response.length.toString());
 
       setState(() {
-        _courses = List<Map<String, dynamic>>.from(response);
+        _courses = response;
         _isLoadingCourses = false;
       });
     } catch (e) {
-      print('Error fetching courses: $e');
+      log('Error fetching courses: $e');
       if (mounted) {
         setState(() {
           _isLoadingCourses = false;
@@ -126,14 +138,11 @@ class _AddCompanyState extends State<AddCompany> {
     }
   }
 
-  Future<void> uploadImage() async {
+  Future<void> fetchImage() async {
     try {
       setState(() {
         _isUploadingImage = true;
       });
-
-      final user = _supabase.auth.currentUser;
-      if (user == null) throw Exception("User not authenticated");
 
       final result = await FilePicker.platform.pickFiles(
         type: FileType.image,
@@ -141,45 +150,18 @@ class _AddCompanyState extends State<AddCompany> {
         withData: true,
       );
 
-      if (result != null && result.files.isNotEmpty) {
-        final pickedFile = result.files.first;
-        final bytes = pickedFile.bytes;
-        if (bytes == null) throw Exception("File is empty");
+      final pickedFile = result?.files.first;
+      final filePath = pickedFile?.path;
 
-        final userId = user.id;
-        final fileName = '$userId/${pickedFile.name}';
-        final storagePath = fileName;
-        final filePath = pickedFile.path;
-
-        final storageRef = _supabase.storage.from('images');
-
-        // Upload the image file
-        final response = await storageRef.uploadBinary(
-          storagePath,
-          bytes,
-          fileOptions: const FileOptions(
-            upsert: true, // allows overwriting if same filename is used
-          ),
-        );
-
-        if (response.isEmpty) throw Exception("Upload failed");
-
-        // Get the public URL
-        // final imageUrl = storageRef.getPublicUrl(storagePath);
-
-        setState(() {
-          _companyImageUrl = fileName;
-          companyImg = File(filePath!);
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image uploaded successfully!')),
-        );
-      }
+      setState(() {
+        //set display img
+        selectedImage = result;
+        companyImg = File(filePath!);
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error uploading image: $e'),
+        const SnackBar(
+          content: Text('Select an image'),
           backgroundColor: Colors.red,
         ),
       );
@@ -190,8 +172,48 @@ class _AddCompanyState extends State<AddCompany> {
     }
   }
 
+  Future<void> addCompanyToAdmin(AdminCompanies company) async {
+    try {
+      await InsertCompany().addCompanyToAdmin(company);
+    } catch (e) {
+      throw Exception('Error adding company: $e');
+    }
+  }
+
+  Future<void> uploadImage(FilePickerResult result) async {
+    if (user == null) throw Exception("User not authenticated");
+
+    if (result.files.isNotEmpty) {
+      final pickedFile = result.files.first;
+      final bytes = pickedFile.bytes;
+      if (bytes == null) throw Exception("File is empty");
+
+      //added timestamp on fileName for unique id
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '${user!.id}/${timestamp}_${pickedFile.name}';
+
+      final storageRef = supabase.storage.from('images');
+
+      // Upload the image file
+      final response = await storageRef.uploadBinary(
+        fileName,
+        bytes,
+        fileOptions: const FileOptions(
+          upsert: true,
+        ),
+      );
+
+      if (response.isEmpty) throw Exception("Upload failed");
+
+      setState(() {
+        //send selected img to supabase
+        _companyImageUrl = fileName;
+      });
+    }
+  }
+
   Future<void> _saveCompany() async {
-    fetchCollege(collegeController.text);
+    fetchCollege(selectedCollege!.college);
 
     if (companyNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -200,39 +222,46 @@ class _AddCompanyState extends State<AddCompany> {
       return;
     }
 
-    if (collegeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('College is required')),
-      );
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
+    try {
+      await uploadImage(selectedImage!);
+    } catch (e) {
+      throw Exception('Select a different Image: $e');
+    }
 
     try {
       final applicableCourses = _selectedCourseNames.toList();
-      await _supabase.from('companies').insert({
-        'companyName': companyNameController.text,
-        'companyImage': _companyImageUrl,
-        'website': websiteController.text,
-        'location': locationController.text,
-        'address': addressController.text,
-        'mode': _internshipMode,
-        'moaDuration': moaDurationController.text,
-        'contactPerson': contactPerson1Controller.text,
-        'contactPerson2': contactPerson2Controller.text,
-        'contactDetails': contactDetailsController.text,
-        'designation': designationController.text,
-        'collegeId': college!.id,
-        'applicableCourses': applicableCourses,
-        'created_at': DateTime.now().toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String(),
-        'description': descriptionController.text,
-        'fieldSpecialization': fieldSpecializationController.text,
-      });
-
+      final response = await supabase
+          .from('companies')
+          .insert({
+            'companyName': companyNameController.text,
+            'companyImage': _companyImageUrl,
+            'website': websiteController.text,
+            'location': locationController.text,
+            'address': addressController.text,
+            'mode': selectedMode,
+            // 'moaDuration': moaDurationController.text,
+            'contactPerson': contactPerson1Controller.text,
+            'contactPerson2': contactPerson2Controller.text,
+            'contactDetails': contactDetailsController.text,
+            'designation': designationController.text,
+            'collegeId': college!.id,
+            'applicableCourses': applicableCourses,
+            'created_at': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toIso8601String(),
+            'description': descriptionController.text,
+            'fieldSpecialization': fieldSpecializationController.text,
+          })
+          .select()
+          .single();
+      final String newCompanyId = response['companyId'];
+      final adminCompany = AdminCompanies(
+        adminId: user!.id,
+        companyId: newCompanyId,
+      );
+      await addCompanyToAdmin(adminCompany);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Company added successfully')),
@@ -254,23 +283,23 @@ class _AddCompanyState extends State<AddCompany> {
     }
   }
 
-  Future<void> testConnection() async {
-    try {
-      debugPrint('Attempting to connect to Supabase...');
+  // Future<void> testConnection() async {
+  //   try {
+  //     debugPrint('Attempting to connect to Supabase...');
 
-      final response = await _supabase
-          .from('courses')
-          .select()
-          .limit(1)
-          .timeout(const Duration(seconds: 5));
+  //     final response = await supabase
+  //         .from('courses')
+  //         .select()
+  //         .limit(1)
+  //         .timeout(const Duration(seconds: 5));
 
-      debugPrint('✅ Connected to Supabase. Course data received.');
-      debugPrint('Response: $response');
-    } catch (e, stackTrace) {
-      debugPrint('❌ Supabase connection failed: $e');
-      debugPrint('Stack trace: $stackTrace');
-    }
-  }
+  //     debugPrint('✅ Connected to Supabase. Course data received.');
+  //     debugPrint('Response: $response');
+  //   } catch (e, stackTrace) {
+  //     debugPrint('❌ Supabase connection failed: $e');
+  //     debugPrint('Stack trace: $stackTrace');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +335,7 @@ class _AddCompanyState extends State<AddCompany> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: _isUploadingImage ? null : uploadImage,
+                            onTap: _isUploadingImage ? null : fetchImage,
                             child: Ink(
                               decoration: BoxDecoration(
                                   border: Border.all(color: AppColors.shadow),
@@ -325,7 +354,7 @@ class _AddCompanyState extends State<AddCompany> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          if (_companyImageUrl != null)
+                                          if (companyImg != null)
                                             ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12),
@@ -342,13 +371,13 @@ class _AddCompanyState extends State<AddCompany> {
                                             Icon(
                                               Icons.add_a_photo_rounded,
                                               size: 40,
-                                              color: _companyImageUrl != null
+                                              color: companyImg != null
                                                   ? Colors.green
                                                   : null,
                                             ),
                                           const SizedBox(height: 12),
                                           Text(
-                                            _companyImageUrl != null
+                                            companyImg != null
                                                 ? "Change Image"
                                                 : "Upload Company Photo",
                                             textAlign: TextAlign.center,
@@ -382,17 +411,6 @@ class _AddCompanyState extends State<AddCompany> {
                       Padding(
                         padding: const EdgeInsets.only(top: 24.0),
                         child: TextField(
-                          controller: collegeController,
-                          decoration: InputDecoration(
-                              hintText: "Enter College",
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              labelText: "College"),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: TextField(
                           controller: websiteController,
                           decoration: InputDecoration(
                               hintText: "Enter Company Website",
@@ -412,7 +430,7 @@ class _AddCompanyState extends State<AddCompany> {
                             labelText: "Company Location",
                           ),
                           minLines: 1,
-                          maxLines: 2,
+                          maxLines: 3,
                         ),
                       ),
                       Padding(
@@ -425,7 +443,7 @@ class _AddCompanyState extends State<AddCompany> {
                                   borderRadius: BorderRadius.circular(12)),
                               labelText: "Address"),
                           minLines: 1,
-                          maxLines: 2,
+                          maxLines: 3,
                         ),
                       ),
                       const Padding(
@@ -439,39 +457,41 @@ class _AddCompanyState extends State<AddCompany> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 24.0),
-                        child: DropdownButtonFormField<String>(
-                          alignment: Alignment.bottomCenter,
-                          value: _internshipMode,
-                          decoration: InputDecoration(
-                            labelText: "Internship Mode",
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                gapPadding: 4),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 16),
-                          ),
-                          items: internshipModes
-                              .map((mode) => DropdownMenuItem(
-                                    value: mode,
-                                    child: Text(mode),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _internshipMode = value;
-                            });
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: TextField(
-                          controller: moaDurationController,
-                          decoration: InputDecoration(
-                              hintText: "MOA Duration(months)",
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              labelText: "Enter duration in months"),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Internship Mode",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: internshipModes.map((mode) {
+                                return FilterChip(
+                                  label: Text(mode),
+                                  selected: selectedMode == mode,
+                                  onSelected: (bool selected) {
+                                    setState(() {
+                                      if (selected) {
+                                        selectedMode = mode;
+                                      }
+                                    });
+                                  },
+                                  backgroundColor: AppColors.primary,
+                                  selectedColor: AppColors.primary,
+                                  checkmarkColor: Colors.white,
+                                  labelStyle: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ),
                       ),
                       Padding(
@@ -480,7 +500,47 @@ class _AddCompanyState extends State<AddCompany> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Courses",
+                              "College",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              children: collegeList.map((college) {
+                                return FilterChip(
+                                  label: Text(college.college),
+                                  selected: selectedCollege == college,
+                                  onSelected: (bool selected) {
+                                    setState(() {
+                                      if (selected) {
+                                        selectedCollege = college;
+                                        fetchCourses(college.id);
+                                      }
+                                    });
+                                  },
+                                  backgroundColor: AppColors.primary,
+                                  selectedColor: AppColors.primary,
+                                  checkmarkColor: Colors.white,
+                                  labelStyle: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Courses Applicable",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -488,24 +548,24 @@ class _AddCompanyState extends State<AddCompany> {
                             ),
                             const SizedBox(height: 8),
                             if (_isLoadingCourses)
-                              const Center(child: CircularProgressIndicator())
+                              const Text("Select a college department")
                             else
                               Wrap(
                                 spacing: 8.0,
                                 runSpacing: 8.0,
                                 children: _courses.map((course) {
                                   return FilterChip(
-                                    label: Text(course['courseName']),
+                                    label: Text(course.courseName),
                                     selected: _selectedCourseNames
-                                        .contains(course['courseName']),
+                                        .contains(course.courseName),
                                     onSelected: (bool selected) {
                                       setState(() {
                                         if (selected) {
                                           _selectedCourseNames
-                                              .add(course['courseName']);
+                                              .add(course.courseName);
                                         } else {
                                           _selectedCourseNames
-                                              .remove(course['courseName']);
+                                              .remove(course.courseName);
                                         }
                                       });
                                     },
@@ -592,6 +652,8 @@ class _AddCompanyState extends State<AddCompany> {
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12)),
                               labelText: "Enter Company Description"),
+                          minLines: 1,
+                          maxLines: 8,
                         ),
                       ),
                       Padding(
