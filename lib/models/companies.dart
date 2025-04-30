@@ -9,7 +9,6 @@ class Companies {
   final String contactPerson2;
   final String contactDetails;
   final String mode;
-  final String moaDuration;
   final String address;
   final String collegeId;
   final List<String> applicableCourse;
@@ -27,7 +26,6 @@ class Companies {
     required this.contactPerson2,
     required this.contactDetails,
     required this.mode,
-    required this.moaDuration,
     required this.address,
     required this.collegeId,
     required this.applicableCourse,
@@ -47,7 +45,6 @@ class Companies {
       contactPerson2: json['contactPerson2'],
       contactDetails: json['contactDetails'],
       mode: json['mode'],
-      moaDuration: json['moaDuration'],
       address: json['address'],
       collegeId: json['collegeId'],
       applicableCourse: List<String>.from(json['applicableCourses'] ?? []),

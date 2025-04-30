@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:inturn/components/company_item.dart';
 import 'package:inturn/models/companies.dart';
@@ -51,7 +52,12 @@ class _ViewCompanyPageState extends State<ViewCompanyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Companies'),
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "View Your Companies",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

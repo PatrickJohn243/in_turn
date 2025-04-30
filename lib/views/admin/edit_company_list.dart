@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:inturn/components/company_item.dart';
 import 'package:inturn/models/companies.dart';
@@ -63,7 +64,12 @@ class _EditCompanyListState extends State<EditCompanyList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Company to Edit'),
+        backgroundColor: AppColors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Edit Companies",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -98,6 +104,7 @@ class _EditCompanyListState extends State<EditCompanyList> {
                               onTap: () => _navigateToEditCompany(company),
                               child: CompanyItem(
                                 company: company,
+                                canEdit: true,
                               ),
                             );
                           },

@@ -93,7 +93,7 @@ class CompaniesFetching {
   }
 
   Future<List<AdminCompanies>> fetchAdminCreatedCompanies(
-      String adminId, String companyId) async {
+      String adminId) async {
     try {
       final response = await supabase
           .from("companiesByAdmin")

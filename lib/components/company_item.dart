@@ -4,11 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/utils/constants/fetch_public_image_url.dart';
+import 'package:inturn/view_models/companies_delete.dart';
+import 'package:inturn/views/admin/edit_company.dart';
 import 'package:inturn/views/company_info.dart';
 
 class CompanyItem extends StatefulWidget {
   final Companies company;
-  const CompanyItem({super.key, required this.company});
+  final bool canEdit;
+  final bool canDelete;
+  const CompanyItem(
+      {super.key,
+      required this.company,
+      this.canEdit = false,
+      this.canDelete = false});
 
   @override
   _CompanyItemState createState() => _CompanyItemState();
@@ -55,13 +63,51 @@ class _CompanyItemState extends State<CompanyItem> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Navigator.push(
+            if (widget.canEdit) {
+              Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => CompanyInfo(
-                          company: widget.company,
-                          imageUrl: imageUrl,
-                        )));
+                  builder: (context) => EditCompany(company: widget.company),
+                ),
+              );
+            } else if (widget.canDelete) {
+              showModalBottomSheet(
+                context: context,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                builder: (context) {
+                  return Container(
+                    decoration:
+                        BoxDecoration(borderRadius: BorderRadius.circular(0)),
+                    padding: const EdgeInsets.all(16.0),
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.delete, color: Colors.white),
+                      label: Text('Delete Company'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        CompaniesDelete()
+                            .DeleteCompany(widget.company.companyId);
+                        Navigator.pop(context); // Close the bottom sheet
+                      },
+                    ),
+                  );
+                },
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CompanyInfo(
+                    company: widget.company,
+                    imageUrl: imageUrl,
+                  ),
+                ),
+              );
+            }
           },
           borderRadius: BorderRadius.circular(12),
           child: Ink(

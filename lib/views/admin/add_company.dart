@@ -106,7 +106,7 @@ class _AddCompanyState extends State<AddCompany> {
     final response = await CollegeFetching().fetchCollegeByName(collegeName);
     setState(() {
       college = response;
-      log(college!.college);
+      // log(college!.college);
     });
   }
 
@@ -116,7 +116,7 @@ class _AddCompanyState extends State<AddCompany> {
         _isLoadingCourses = true;
       });
       final response = await CoursesFetching().fetchCourses(collegeId);
-      log(response.length.toString());
+      // log(response.length.toString());
 
       setState(() {
         _courses = response;
