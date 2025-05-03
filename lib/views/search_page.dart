@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -58,7 +57,6 @@ class _SearchPageState extends State<SearchPage> {
       final response = await supabase.from("courses").select();
       setState(() {
         coursesChips = response.map((json) => Courses.fromJson(json)).toList();
-        // log("courses length: ${coursesChips.length}");
       });
     } catch (e) {
       log("$e");

@@ -92,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 Text(
                   userProfile?.role == "Admin" ? "Admin Profile" : "Profile",
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 28,
                       color: Colors.black,
                       fontWeight: FontWeight.bold),

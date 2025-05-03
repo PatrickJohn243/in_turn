@@ -61,9 +61,20 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     textController = TextEditingController();
     textFieldFocusNode = FocusNode();
-    choiceChipsValue = 'BSCS';
-    fetchCourses(widget.user!.collegeId);
+    if (widget.user != null) {
+      fetchCourses(widget.user!.collegeId);
+    }
     setInitialCompanies(widget.companies);
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+
+    if (widget.user != null) {
+      fetchCourses(widget.user!.collegeId);
+    }
   }
 
   @override
@@ -84,7 +95,7 @@ class _HomePageState extends State<HomePage> {
           automaticallyImplyLeading: false,
           leading: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 0, 6),
-            child: Container(
+            child: SizedBox(
               width: 44,
               height: 44,
               child: Image.asset("img/logo.png"),
@@ -101,9 +112,9 @@ class _HomePageState extends State<HomePage> {
                   widget.user == null
                       ? 'Hey User'
                       : 'Hey ${widget.user!.firstName}',
-                  style: TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 24),
                 ),
-                Text(
+                const Text(
                   'Welcome to InTurn',
                   style: TextStyle(fontSize: 14),
                 ),
@@ -121,7 +132,7 @@ class _HomePageState extends State<HomePage> {
                   size: 24,
                 ),
                 onPressed: () {
-                  print('IconButton pressed ...');
+                  log('IconButton pressed ...');
                 },
               ),
             ),
@@ -197,10 +208,16 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         const SizedBox(width: 16),
                         Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 8),
-                          child: _buildChoiceChips(),
-                        ),
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                0, 8, 0, 8),
+                            child: widget.user != null
+                                ? _buildChoiceChips()
+                                : const Text(
+                                    "Log in to filter by your department",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )),
                         const SizedBox(width: 16),
                       ],
                     ),

@@ -5,27 +5,30 @@ import 'package:inturn/components/company_item.dart';
 import 'package:inturn/main.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/models/savedCompanies.dart';
+import 'package:inturn/models/users.dart';
 import 'package:inturn/provider/favorites_provider.dart';
 import 'package:inturn/view_models/companies_fetching.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SavedPage extends StatefulWidget {
-  const SavedPage({Key? key}) : super(key: key);
+  final Users? user;
+  const SavedPage({super.key, required this.user});
 
   @override
   _SavedPageState createState() => _SavedPageState();
 }
 
 class _SavedPageState extends State<SavedPage> {
-  final user = supabase.auth.currentUser;
   List<SavedCompanies> savedCompaniesId = [];
   List<Companies> savedCompanies = [];
 
   Future<void> fetchSavedCompanies() async {
     List<Companies> companies = [];
-    if (user == null) return;
+    if (widget.user == null) return;
 
-    final savedIds = await CompaniesFetching().fetchSavedCompanies(user!.id);
+    final savedIds =
+        await CompaniesFetching().fetchSavedCompanies(widget.user!.userId);
     setState(() {
       savedCompaniesId = savedIds;
     });
@@ -51,40 +54,65 @@ class _SavedPageState extends State<SavedPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final favoritesProvider = Provider.of<FavoritesProvider>(context);
     final savedCompanies = favoritesProvider.savedCompanies;
     return SafeArea(
-      child: Scaffold(
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-                  "Your favorites",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        child: Scaffold(
+      body: widget.user != null
+          ? SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      "Your favorites",
+                      style:
+                          TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  // Divider(
+                  //   thickness: 1,
+                  // ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: ListView(
+                      padding: EdgeInsets.fromLTRB(0, 8, 0, 44),
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      children: savedCompanies
+                          .map((company) => CompanyItem(company: company))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      "Log in to save your favorites!",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              Divider(
-                thickness: 1,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: ListView(
-                  padding: EdgeInsets.fromLTRB(0, 8, 0, 44),
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: savedCompanies
-                      .map((company) => CompanyItem(company: company))
-                      .toList(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+    ));
   }
 }

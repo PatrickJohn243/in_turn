@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:inturn/main.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/models/users.dart';
+import 'package:inturn/provider/auth_state_provider.dart';
 import 'package:inturn/routes/admin_dashboard.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/view_models/companies_fetching.dart';
@@ -13,6 +14,7 @@ import 'package:inturn/views/home_page.dart';
 import 'package:inturn/views/profile_page.dart';
 import 'package:inturn/views/saved_page.dart';
 import 'package:inturn/views/search_page.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
@@ -27,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
   String userId = '';
   Users? userProfile;
   List<Companies> fetchedCompanies = [];
-  String role = '';
+  String role = 'Student';
 
   void setCurrentPageIndex(int pageIndex) {
     setState(() {
@@ -37,7 +39,6 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> fetchUser() async {
     final user = supabase.auth.currentUser;
-
     if (user == null) {
       log('User is not logged in');
       return;
@@ -54,7 +55,7 @@ class _DashboardState extends State<Dashboard> {
       setState(() {
         userProfile = profile;
         role = profile.role;
-        // log("user: ${userProfile.toString()}");
+        currentPageIndex = 0; // Reset page index to avoid invalid index
       });
     } catch (e) {
       log('Error fetching user: $e');
@@ -71,16 +72,40 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchAllCompanies();
+    fetchUser();
+
+    // Listen to auth state changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider =
+          Provider.of<AuthStateProvider>(context, listen: false);
+      authProvider.addListener(() {
+        if (authProvider.lastEvent == AuthChangeEvent.signedIn ||
+            authProvider.lastEvent == AuthChangeEvent.initialSession) {
+          fetchUser();
+        }
+        if (authProvider.lastEvent == AuthChangeEvent.signedOut) {
+          setState(() {
+            userProfile = null;
+            role = 'Student';
+            // currentPageIndex = 0;
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
     fetchUser();
   }
 
   @override
   Widget build(BuildContext context) {
     if (fetchedCompanies.isEmpty) {
-      // You can show a loader or splash until the data is ready
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -90,7 +115,7 @@ class _DashboardState extends State<Dashboard> {
       body: IndexedStack(
         index: currentPageIndex,
         children: [
-          if (userProfile?.role == "Student") ...[
+          if (role == "Student") ...[
             HomePage(
               user: userProfile,
               companies: fetchedCompanies,
@@ -99,14 +124,16 @@ class _DashboardState extends State<Dashboard> {
             SearchPage(
               companies: fetchedCompanies,
             ),
-            SavedPage(),
-            ProfilePage(),
+            SavedPage(
+              user: userProfile,
+            ),
+            const ProfilePage(),
           ] else ...[
-            AdminDashboard(),
+            const AdminDashboard(),
             SearchPage(
               companies: fetchedCompanies,
             ),
-            ProfilePage(),
+            const ProfilePage(),
           ]
         ],
       ),
@@ -125,8 +152,8 @@ class _DashboardState extends State<Dashboard> {
           },
           selectedIndex: currentPageIndex,
           destinations: [
-            if (userProfile?.role == "Student") ...[
-              NavigationDestination(
+            if (role == "Student") ...[
+              const NavigationDestination(
                 icon: Icon(
                   Icons.business_center_outlined,
                   color: AppColors.primaryGrey,
@@ -137,7 +164,7 @@ class _DashboardState extends State<Dashboard> {
                   color: AppColors.primary,
                 ),
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(
                   Icons.search_rounded,
                   color: AppColors.primaryGrey,
@@ -150,7 +177,7 @@ class _DashboardState extends State<Dashboard> {
                   size: 28,
                 ),
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(
                   Icons.favorite_border_rounded,
                   color: AppColors.primaryGrey,
@@ -161,7 +188,7 @@ class _DashboardState extends State<Dashboard> {
                   color: AppColors.primary,
                 ),
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(
                   Icons.person_outline,
                   color: AppColors.primaryGrey,
@@ -173,7 +200,7 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ),
             ] else ...[
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(
                   Icons.business_center_outlined,
                   color: AppColors.primaryGrey,
@@ -184,7 +211,7 @@ class _DashboardState extends State<Dashboard> {
                   color: AppColors.primary,
                 ),
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(
                   Icons.search_rounded,
                   color: AppColors.primaryGrey,
@@ -197,7 +224,7 @@ class _DashboardState extends State<Dashboard> {
                   size: 28,
                 ),
               ),
-              NavigationDestination(
+              const NavigationDestination(
                 icon: Icon(
                   Icons.person_outline,
                   color: AppColors.primaryGrey,
