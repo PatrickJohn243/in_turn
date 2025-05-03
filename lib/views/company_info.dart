@@ -65,6 +65,7 @@ class _CompanyInfoState extends State<CompanyInfo> {
       Icons.badge: widget.company.designation,
       Icons.person_outline: widget.company.contactPerson2
     };
+    FocusManager.instance.primaryFocus?.unfocus();
     return Consumer<FavoritesProvider>(
         builder: (context, favoritesProvider, child) {
       final isFavorite = favoritesProvider.isFavorite(widget.company.companyId);
@@ -117,11 +118,12 @@ class _CompanyInfoState extends State<CompanyInfo> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: isFavorite
-                                      ? Icon(
+                                      ? const Icon(
                                           Icons.favorite_rounded,
                                           color: Colors.red,
                                         )
-                                      : Icon(Icons.favorite_border_rounded),
+                                      : const Icon(
+                                          Icons.favorite_border_rounded),
                                 ),
                               ),
                             ),
@@ -200,16 +202,10 @@ class _CompanyInfoState extends State<CompanyInfo> {
                 const SizedBox(
                   height: 12,
                 ),
-                // const Text("Company Info",
-                //     style: TextStyle(
-                //         fontWeight: FontWeight.bold,
-                //         fontSize: 24,
-                //         color: AppColors.primaryGrey)),
                 Container(
+                  width: double.infinity,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      // border: Border.all(color: AppColors.primary, width: 2),
-                      // color: const Color.fromARGB(255, 157, 194, 243)),
                       color: AppColors.lighterPrimary),
                   child: Padding(
                     padding: EdgeInsets.all(12.0),
@@ -222,9 +218,9 @@ class _CompanyInfoState extends State<CompanyInfo> {
                 const SizedBox(
                   height: 12,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: const Text("Company",
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text("Company",
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 24,

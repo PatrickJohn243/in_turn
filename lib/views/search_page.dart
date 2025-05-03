@@ -23,7 +23,6 @@ class _SearchPageState extends State<SearchPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? textController;
   FocusNode? textFieldFocusNode;
-  // List<String> choiceChips = [];
   List<Courses> coursesChipsSelected = [];
   List<Courses> coursesChips = [];
   Timer? _debounce;
@@ -99,129 +98,142 @@ class _SearchPageState extends State<SearchPage> {
         key: scaffoldKey,
         body: SafeArea(
           top: true,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 8),
-                  child: TextFormField(
-                    controller: textController,
-                    onChanged: (value) =>
-                        {sendSearchQueryByInterval(value), searchQuery = value},
-                    focusNode: textFieldFocusNode,
-                    autofocus: true,
-                    obscureText: false,
-                    decoration: InputDecoration(
-                      labelText: 'Find your next opportunity...',
-                      labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      hintStyle: Theme.of(context).textTheme.labelMedium,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.secondary,
-                          width: 2,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              fetchCourses();
+              setState(() {
+                coursesChipsSelected = [];
+                // searchFetching(value, coursesChipsSelected); Continue
+              });
+            },
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 8),
+                    child: TextFormField(
+                      controller: textController,
+                      onChanged: (value) => {
+                        sendSearchQueryByInterval(value),
+                        searchQuery = value
+                      },
+                      focusNode: textFieldFocusNode,
+                      autofocus: true,
+                      obscureText: false,
+                      decoration: InputDecoration(
+                        labelText: 'Find your next opportunity...',
+                        labelStyle: Theme.of(context).textTheme.bodyMedium,
+                        hintStyle: Theme.of(context).textTheme.labelMedium,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.secondary,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 2,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.error,
-                          width: 2,
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.error,
-                          width: 2,
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        borderRadius: BorderRadius.circular(24),
+                        contentPadding:
+                            const EdgeInsetsDirectional.fromSTEB(20, 0, 0, 0),
+                        suffixIcon: Icon(
+                          Icons.search_rounded,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
                       ),
-                      contentPadding:
-                          const EdgeInsetsDirectional.fromSTEB(20, 0, 0, 0),
-                      suffixIcon: Icon(
-                        Icons.search_rounded,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      cursorColor: Theme.of(context).colorScheme.primary,
                     ),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    cursorColor: Theme.of(context).colorScheme.primary,
                   ),
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      const SizedBox(width: 16),
-                      Padding(
-                        padding:
-                            const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 8),
-                        child: Wrap(
-                          spacing: 8.0,
-                          runSpacing: 12.0,
-                          children: coursesChips.map((chip) {
-                            return ChoiceChip(
-                              label: Text(chip.courseName),
-                              selected: coursesChipsSelected.any((selected) =>
-                                  selected.courseName == chip.courseName),
-                              onSelected: (selected) {
-                                setState(() {
-                                  if (selected) {
-                                    coursesChipsSelected.add(chip);
-                                  } else {
-                                    coursesChipsSelected.removeWhere(
-                                        (c) => c.courseName == chip.courseName);
-                                  }
-                                  searchFetching(
-                                      searchQuery, coursesChipsSelected);
-                                });
-                              },
-                              checkmarkColor: Colors.white,
-                              selectedColor: AppColors.primary,
-                              backgroundColor: AppColors.primary,
-                              labelStyle: TextStyle(color: Colors.white),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            );
-                          }).toList(),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        const SizedBox(width: 16),
+                        Padding(
+                          padding:
+                              const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 8),
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 12.0,
+                            children: coursesChips.map((chip) {
+                              return ChoiceChip(
+                                label: Text(chip.courseName),
+                                selected: coursesChipsSelected.any((selected) =>
+                                    selected.courseName == chip.courseName),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      coursesChipsSelected.add(chip);
+                                    } else {
+                                      coursesChipsSelected.removeWhere((c) =>
+                                          c.courseName == chip.courseName);
+                                    }
+                                    searchFetching(
+                                        searchQuery, coursesChipsSelected);
+                                  });
+                                },
+                                checkmarkColor: Colors.white,
+                                selectedColor: AppColors.primary,
+                                backgroundColor: AppColors.primary,
+                                labelStyle: TextStyle(color: Colors.white),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
+                        const SizedBox(width: 16),
+                      ],
+                    ),
                   ),
-                ),
-                const Divider(
-                  thickness: 1,
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 16, top: 12),
-                  child: Text(
-                    '$resultCount results for you',
-                    style: Theme.of(context).textTheme.labelMedium,
+                  const Divider(
+                    thickness: 1,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 44),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: filteredCompanies
-                        .map((company) => CompanyItem(company: company))
-                        .toList(),
+                  Padding(
+                    padding:
+                        const EdgeInsetsDirectional.only(start: 16, top: 12),
+                    child: Text(
+                      '$resultCount results for you',
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 44),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: filteredCompanies
+                          .map((company) => CompanyItem(company: company))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

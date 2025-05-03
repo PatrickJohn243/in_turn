@@ -201,27 +201,31 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Padding(
                   padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const SizedBox(width: 16),
-                        Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0, 8, 0, 8),
-                            child: widget.user != null
-                                ? _buildChoiceChips()
-                                : const Text(
-                                    "Log in to filter by your department",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )),
-                        const SizedBox(width: 16),
-                      ],
-                    ),
-                  ),
+                  child: widget.user != null
+                      ? SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              const SizedBox(width: 16),
+                              Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0, 8, 0, 8),
+                                  child: _buildChoiceChips()),
+                              const SizedBox(width: 16),
+                            ],
+                          ),
+                        )
+                      : const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          child: Center(
+                            child: Text(
+                              "Log in to filter by your department",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
                 ),
                 const Divider(
                   height: 8,
