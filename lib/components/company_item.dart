@@ -6,7 +6,7 @@ import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/utils/constants/fetch_public_image_url.dart';
 import 'package:inturn/view_models/companies_delete.dart';
 import 'package:inturn/views/admin/edit_company.dart';
-import 'package:inturn/views/company_info.dart';
+import 'package:inturn/views/company_details/company_info.dart';
 
 class CompanyItem extends StatefulWidget {
   final Companies company;

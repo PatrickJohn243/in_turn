@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/utils/constants/fetch_public_image_url.dart';
-import 'package:inturn/views/company_info.dart';
+import 'package:inturn/views/company_details/company_info.dart';
 
 class CompanySmallCard extends StatefulWidget {
   final Companies company;
