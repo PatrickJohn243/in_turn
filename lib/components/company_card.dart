@@ -112,7 +112,6 @@ class _CompanyCardState extends State<CompanyCard> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                 ),
-                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 softWrap: true,
                               ),

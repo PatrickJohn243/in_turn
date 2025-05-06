@@ -28,6 +28,7 @@ class _SearchPageState extends State<SearchPage> {
   Timer? _debounce;
   int resultCount = 0;
   String searchQuery = '';
+  bool isLoading = false;
 
   get response => null;
 
@@ -38,17 +39,29 @@ class _SearchPageState extends State<SearchPage> {
     textController = TextEditingController();
     textFieldFocusNode = FocusNode();
     fetchCourses();
-    setInitialCompanyList();
-    // fetchAllCompanies();
+    // setInitialCompanyList();
+
+    fetchAllCompanies();
     setState(() {
-      resultCount = widget.companies.length;
+      resultCount = filteredCompanies.length;
     });
   }
 
-  void setInitialCompanyList() async {
+  // void setInitialCompanyList() async {
+  //   setState(() {
+  //     // log(widget.companies.length.toString());
+  //     filteredCompanies = companies;
+  //   });
+  // }
+
+  void fetchAllCompanies() async {
     setState(() {
-      log(widget.companies.length.toString());
-      filteredCompanies = widget.companies;
+      isLoading = true;
+    });
+    final fetchedCompanies = await CompaniesFetching().fetchCompanies();
+    setState(() {
+      filteredCompanies = fetchedCompanies;
+      isLoading = false;
     });
   }
 
@@ -102,6 +115,7 @@ class _SearchPageState extends State<SearchPage> {
           child: RefreshIndicator(
             onRefresh: () async {
               fetchCourses();
+              fetchAllCompanies();
               setState(() {
                 coursesChipsSelected = [];
                 searchFetching('', coursesChipsSelected);
@@ -222,17 +236,24 @@ class _SearchPageState extends State<SearchPage> {
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 44),
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: filteredCompanies
-                          .map((company) => CompanyItem(company: company))
-                          .toList(),
-                    ),
-                  ),
+                  isLoading
+                      ? SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ListView(
+                            padding: const EdgeInsets.fromLTRB(0, 8, 0, 44),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: filteredCompanies
+                                .map((company) => CompanyItem(company: company))
+                                .toList(),
+                          ),
+                        ),
                 ],
               ),
             ),

@@ -344,12 +344,14 @@ class _CompanyInfoState extends State<CompanyInfo> {
                               padding: const EdgeInsets.all(12.0),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     widget.company.companyName,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 32),
+                                    textAlign: TextAlign.center,
                                   ),
                                   Text(
                                     widget.company.fieldSpecialization,

@@ -97,11 +97,13 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              widget.company.companyName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyLarge,
+                            Expanded(
+                              child: Text(
+                                widget.company.companyName,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsetsDirectional.fromSTEB(
