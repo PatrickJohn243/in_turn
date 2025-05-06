@@ -92,17 +92,36 @@ class CompaniesFetching {
     }
   }
 
-  Future<List<AdminCompanies>> fetchAdminCreatedCompanies(
-      String adminId) async {
+  // Future<List<AdminCompanies>> fetchAdminCreatedCompanies(
+  //     String adminId) async {
+  //   try {
+  //     final response = await supabase
+  //         .from("companiesByAdmin")
+  //         .select()
+  //         .eq('adminId', adminId);
+  //     return (response as List<dynamic>)
+  //         .map((company) =>
+  //             AdminCompanies.fromJson(company as Map<String, dynamic>))
+  //         .toList();
+  //   } catch (e) {
+  //     throw Exception("$e");
+  //   }
+  // }
+  Future<List<Companies>> fetchAdminCreatedCompanies(String adminId) async {
     try {
       final response = await supabase
           .from("companiesByAdmin")
           .select()
           .eq('adminId', adminId);
-      return (response as List<dynamic>)
-          .map((company) =>
-              AdminCompanies.fromJson(company as Map<String, dynamic>))
-          .toList();
+
+      final companyIds = (response as List).map((e) => e['companyId']).toList();
+      // log(companyIds.length.toString());
+      List<Companies> adminCompanies = [];
+      for (var id in companyIds) {
+        final companies = await fetchCompaniesByCompanyId(id);
+        adminCompanies.addAll(companies);
+      }
+      return adminCompanies;
     } catch (e) {
       throw Exception("$e");
     }

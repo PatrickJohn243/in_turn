@@ -1,51 +1,44 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:inturn/models/users.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:inturn/view_models/companies_fetching.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:inturn/components/company_item.dart';
 import 'package:inturn/models/companies.dart';
 
 class ViewCompanyPage extends StatefulWidget {
-  const ViewCompanyPage({super.key});
+  final Users? user;
+  const ViewCompanyPage({super.key, required this.user});
 
   @override
   State<ViewCompanyPage> createState() => _ViewCompanyPageState();
 }
 
 class _ViewCompanyPageState extends State<ViewCompanyPage> {
-  final _supabase = Supabase.instance.client;
-  List<Companies> _companies = [];
-  bool _loading = true;
+  final supabase = Supabase.instance.client;
+  List<Companies> companies = [];
+  bool isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _fetchCompanies();
+    fetchAdminCompanies(widget.user!.userId);
   }
 
-  Future<void> _fetchCompanies() async {
-    try {
-      setState(() {
-        _loading = true;
-        _error = null;
-      });
-
-      final response = await _supabase
-          .from('companies')
-          .select()
-          .order('created_at', ascending: false);
-
-      setState(() {
-        _companies =
-            (response as List).map((data) => Companies.fromJson(data)).toList();
-        _loading = false;
-      });
-    } catch (error) {
-      setState(() {
-        _error = error.toString();
-        _loading = false;
-      });
-    }
+  Future<void> fetchAdminCompanies(String userId) async {
+    setState(() {
+      isLoading = true;
+    });
+    final fetchedAdminCompanies =
+        await CompaniesFetching().fetchAdminCreatedCompanies(userId);
+    setState(() {
+      companies = fetchedAdminCompanies;
+      log(companies.length.toString());
+      isLoading = false;
+    });
   }
 
   @override
@@ -59,7 +52,7 @@ class _ViewCompanyPageState extends State<ViewCompanyPage> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
-      body: _loading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
               ? Center(
@@ -71,23 +64,24 @@ class _ViewCompanyPageState extends State<ViewCompanyPage> {
                         style: const TextStyle(color: Colors.red),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _fetchCompanies,
-                        child: const Text('Retry'),
-                      ),
+                      // ElevatedButton(
+                      //   onPressed: fetchAdminCompanies(widget.user!.userId);,
+                      //   child: const Text('Retry'),
+                      // ),
                     ],
                   ),
                 )
-              : _companies.isEmpty
+              : companies.isEmpty
                   ? const Center(child: Text('No companies found'))
                   : Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: RefreshIndicator(
-                        onRefresh: _fetchCompanies,
+                        onRefresh: () =>
+                            fetchAdminCompanies(widget.user!.userId),
                         child: ListView.builder(
-                          itemCount: _companies.length,
+                          itemCount: companies.length,
                           itemBuilder: (context, index) {
-                            final company = _companies[index];
+                            final company = companies[index];
                             return CompanyItem(
                               company: company,
                             );

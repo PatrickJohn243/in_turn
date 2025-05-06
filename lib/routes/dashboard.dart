@@ -112,149 +112,148 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     final currentIndex = context.watch<PageProvider>().currentIndex;
-    return Container(
-      color: Colors.white,
-      child: SafeArea(
-          child: Scaffold(
-        body: Stack(
-          children: [
-            isLoading
-                ? Container(
-                    color: Colors.white, // Semi-transparent overlay
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : IndexedStack(
-                    index: currentIndex,
-                    children: [
-                      if (role == "Student") ...[
-                        HomePage(
-                          user: userProfile,
-                          companies: fetchedCompanies,
-                          onTapSearch: (index) {
-                            context.read<PageProvider>().setIndex(1);
-                          },
-                        ),
-                        SearchPage(
-                          companies: fetchedCompanies,
-                        ),
-                        SavedPage(
-                          user: userProfile,
-                        ),
-                        const ProfilePage(),
-                      ] else ...[
-                        const AdminDashboard(),
-                        SearchPage(
-                          companies: fetchedCompanies,
-                        ),
-                        const ProfilePage(),
-                      ]
-                    ],
+    return SafeArea(
+        child: Scaffold(
+      body: Stack(
+        children: [
+          isLoading
+              ? Container(
+                  color: Colors.white, // Semi-transparent overlay
+                  child: const Center(
+                    child: CircularProgressIndicator(),
                   ),
+                )
+              : IndexedStack(
+                  index: currentIndex,
+                  children: [
+                    if (role == "Student") ...[
+                      HomePage(
+                        user: userProfile,
+                        companies: fetchedCompanies,
+                        onTapSearch: (index) {
+                          context.read<PageProvider>().setIndex(1);
+                        },
+                      ),
+                      SearchPage(
+                        companies: fetchedCompanies,
+                      ),
+                      SavedPage(
+                        user: userProfile,
+                      ),
+                      const ProfilePage(),
+                    ] else ...[
+                      AdminDashboard(
+                        user: userProfile,
+                      ),
+                      SearchPage(
+                        companies: fetchedCompanies,
+                      ),
+                      const ProfilePage(),
+                    ]
+                  ],
+                ),
+        ],
+      ),
+      bottomNavigationBar: NavigationBarTheme(
+        data: const NavigationBarThemeData(
+            labelTextStyle: WidgetStatePropertyAll<TextStyle>(
+                TextStyle(color: AppColors.primaryGrey))),
+        child: NavigationBar(
+          indicatorColor: Colors.white,
+          // backgroundColor: AppColors.primary,
+          backgroundColor: Colors.white,
+          onDestinationSelected: (index) {
+            context.read<PageProvider>().setIndex(index);
+          },
+          selectedIndex: currentIndex,
+          destinations: [
+            if (role == "Student") ...[
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.business_center_outlined,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Companies',
+                selectedIcon: Icon(
+                  Icons.business_center_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primaryGrey,
+                  size: 24,
+                ),
+                label: 'Search',
+                selectedIcon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.favorite_border_rounded,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Saved',
+                selectedIcon: Icon(
+                  Icons.favorite_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Profile',
+                selectedIcon: Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                ),
+              ),
+            ] else ...[
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.business_center_outlined,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Companies',
+                selectedIcon: Icon(
+                  Icons.business_center_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primaryGrey,
+                  size: 24,
+                ),
+                label: 'Search',
+                selectedIcon: Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
+              const NavigationDestination(
+                icon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.primaryGrey,
+                ),
+                label: 'Profile',
+                selectedIcon: Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                ),
+              ),
+            ]
           ],
         ),
-        bottomNavigationBar: NavigationBarTheme(
-          data: const NavigationBarThemeData(
-              labelTextStyle: WidgetStatePropertyAll<TextStyle>(
-                  TextStyle(color: AppColors.primaryGrey))),
-          child: NavigationBar(
-            indicatorColor: Colors.white,
-            // backgroundColor: AppColors.primary,
-            backgroundColor: Colors.white,
-            onDestinationSelected: (index) {
-              context.read<PageProvider>().setIndex(index);
-            },
-            selectedIndex: currentIndex,
-            destinations: [
-              if (role == "Student") ...[
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.business_center_outlined,
-                    color: AppColors.primaryGrey,
-                  ),
-                  label: 'Companies',
-                  selectedIcon: Icon(
-                    Icons.business_center_rounded,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.search_rounded,
-                    color: AppColors.primaryGrey,
-                    size: 24,
-                  ),
-                  label: 'Search',
-                  selectedIcon: Icon(
-                    Icons.search_rounded,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
-                ),
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.favorite_border_rounded,
-                    color: AppColors.primaryGrey,
-                  ),
-                  label: 'Saved',
-                  selectedIcon: Icon(
-                    Icons.favorite_rounded,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.person_outline,
-                    color: AppColors.primaryGrey,
-                  ),
-                  label: 'Profile',
-                  selectedIcon: Icon(
-                    Icons.person,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ] else ...[
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.business_center_outlined,
-                    color: AppColors.primaryGrey,
-                  ),
-                  label: 'Companies',
-                  selectedIcon: Icon(
-                    Icons.business_center_rounded,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.search_rounded,
-                    color: AppColors.primaryGrey,
-                    size: 24,
-                  ),
-                  label: 'Search',
-                  selectedIcon: Icon(
-                    Icons.search_rounded,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
-                ),
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.person_outline,
-                    color: AppColors.primaryGrey,
-                  ),
-                  label: 'Profile',
-                  selectedIcon: Icon(
-                    Icons.person,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ]
-            ],
-          ),
-        ),
-      )),
-    );
+      ),
+    ));
   }
 }

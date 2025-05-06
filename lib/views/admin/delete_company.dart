@@ -1,12 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:inturn/components/company_item.dart';
 import 'package:inturn/models/companies.dart';
+import 'package:inturn/models/users.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:inturn/view_models/companies_fetching.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeleteCompany extends StatefulWidget {
-  const DeleteCompany({super.key});
+  final Users? user;
+  const DeleteCompany({super.key, required this.user});
 
   @override
   State<DeleteCompany> createState() => _DeleteCompanyState();
@@ -15,41 +19,33 @@ class DeleteCompany extends StatefulWidget {
 class _DeleteCompanyState extends State<DeleteCompany> {
   final _supabase = Supabase.instance.client;
   List<Companies> companies = [];
-  bool _loading = true;
+  bool isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _fetchCompanies();
+    fetchAdminCompanies(widget.user!.userId);
   }
 
-  Future<void> _fetchCompanies() async {
-    try {
-      setState(() {
-        _loading = true;
-        _error = null;
-      });
+  Future<void> fetchAdminCompanies(String userId) async {
+    setState(() {
+      isLoading = true;
+    });
+    final fetchedAdminCompanies =
+        await CompaniesFetching().fetchAdminCreatedCompanies(userId);
+    setState(() {
+      companies = fetchedAdminCompanies;
 
-      final response = await CompaniesFetching().fetchCompanies();
-
-      setState(() {
-        companies = response;
-        _loading = false;
-      });
-    } catch (error) {
-      setState(() {
-        _error = error.toString();
-        _loading = false;
-      });
-    }
+      isLoading = false;
+    });
   }
 
   Future<void> _deleteCompany(String companyId) async {
     try {
       await _supabase.from('companies').delete().eq('id', companyId);
       // Refresh the list after deletion
-      _fetchCompanies();
+      fetchAdminCompanies(widget.user!.userId);
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -101,12 +97,12 @@ class _DeleteCompanyState extends State<DeleteCompany> {
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
-        body: _loading
+        body: isLoading
             ? const Center(child: CircularProgressIndicator())
             : Padding(
                 padding: const EdgeInsets.all(12),
                 child: RefreshIndicator(
-                  onRefresh: _fetchCompanies,
+                  onRefresh: () => fetchAdminCompanies(widget.user!.userId),
                   child: SingleChildScrollView(
                     child: Column(
                       children: companies

@@ -238,18 +238,18 @@ class _CompanyItemState extends State<CompanyItem> {
                                     maxLines: 1,
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0, 0, 4, 0),
-                                  child: Icon(
-                                    Icons.chat_bubble_outline_rounded,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color,
-                                    size: 16,
-                                  ),
-                                ),
+                                // Padding(
+                                //   padding: const EdgeInsetsDirectional.fromSTEB(
+                                //       0, 0, 4, 0),
+                                //   child: Icon(
+                                //     Icons.chat_bubble_outline_rounded,
+                                //     color: Theme.of(context)
+                                //         .textTheme
+                                //         .bodySmall
+                                //         ?.color,
+                                //     size: 16,
+                                //   ),
+                                // ),
                                 Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 0, 16, 0),
@@ -262,45 +262,45 @@ class _CompanyItemState extends State<CompanyItem> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Align(
-                            alignment: const AlignmentDirectional(0, 0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Text(
-                                      '4',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.star_rounded,
-                                      color: Colors.amber,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 24),
-                                  child: Icon(
-                                    Icons.keyboard_control_rounded,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color,
-                                    size: 24,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          // const SizedBox(height: 4),
+                          // Align(
+                          //   alignment: const AlignmentDirectional(0, 0),
+                          //   child: Row(
+                          //     mainAxisSize: MainAxisSize.max,
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     crossAxisAlignment: CrossAxisAlignment.center,
+                          //     children: [
+                          //       const Row(
+                          //         mainAxisSize: MainAxisSize.max,
+                          //         children: [
+                          //           Text(
+                          //             '4',
+                          //             style: TextStyle(
+                          //               color: Colors.black,
+                          //               fontSize: 16,
+                          //             ),
+                          //           ),
+                          //           Icon(
+                          //             Icons.star_rounded,
+                          //             color: Colors.amber,
+                          //             size: 20,
+                          //           ),
+                          //         ],
+                          //       ),
+                          //       Padding(
+                          //         padding: const EdgeInsets.only(left: 24),
+                          //         child: Icon(
+                          //           Icons.keyboard_control_rounded,
+                          //           color: Theme.of(context)
+                          //               .textTheme
+                          //               .bodySmall
+                          //               ?.color,
+                          //           size: 24,
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),

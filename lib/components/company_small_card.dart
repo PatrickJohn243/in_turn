@@ -132,32 +132,32 @@ class _CompanySmallCardState extends State<CompanySmallCard> {
                                   style: TextStyle(fontSize: 14),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    0, 0, 4, 0),
-                                child: Icon(
-                                  Icons.chat_bubble_outline_rounded,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withOpacity(0.6),
-                                  size: 16,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    0, 0, 16, 0),
-                                child: Text(
-                                  '24',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  '12h',
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
-                              ),
+                              // Padding(
+                              //   padding: const EdgeInsetsDirectional.fromSTEB(
+                              //       0, 0, 4, 0),
+                              //   child: Icon(
+                              //     Icons.chat_bubble_outline_rounded,
+                              //     color: Theme.of(context)
+                              //         .colorScheme
+                              //         .onSurface
+                              //         .withOpacity(0.6),
+                              //     size: 16,
+                              //   ),
+                              // ),
+                              // Padding(
+                              //   padding: const EdgeInsetsDirectional.fromSTEB(
+                              //       0, 0, 16, 0),
+                              //   child: Text(
+                              //     '24',
+                              //     style: Theme.of(context).textTheme.labelSmall,
+                              //   ),
+                              // ),
+                              // Expanded(
+                              //   child: Text(
+                              //     '12h',
+                              //     style: Theme.of(context).textTheme.labelSmall,
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
