@@ -28,6 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Users? userProfile;
   Colleges? userCollege;
   Courses? userCourse;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -73,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
         userProfile = profile;
         userCollege = collegeProfile;
         userCourse = courseProfile;
-        // log(userCollege.toString());
+        isLoading = false;
       }
     });
   }
@@ -85,206 +86,232 @@ class _ProfilePageState extends State<ProfilePage> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Scaffold(
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userProfile?.role == "Admin" ? "Admin Profile" : "Profile",
-                  style: const TextStyle(
-                      fontSize: 28,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold),
-                ),
-                if (user != null) ...[
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16.0),
-                    child: Text(
-                      "Account",
-                      style: TextStyle(
-                          fontSize: 20, color: AppColors.secondaryGrey),
-                    ),
-                  ),
-                  InfoContainer(
-                    type: "Name",
-                    data: "${userProfile?.firstName} ${userProfile?.lastName}",
-                  ),
-                  InfoContainer(
-                    type: "Email",
-                    data: "${user.email}",
-                  ),
-                  InfoContainer(
-                    type: "College",
-                    data: "${userCollege?.college}",
-                  ),
-                  InfoContainer(
-                    type: "Course",
-                    data: "${userCourse?.courseName}",
-                  ),
-                ],
-                const Padding(
-                  padding: EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    "General",
-                    style:
-                        TextStyle(fontSize: 20, color: AppColors.secondaryGrey),
-                  ),
-                ),
-
-                /// Google Login/Logout
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () async {
-                        if (user == null) {
-                          await googleAuthLogin();
-                          await checkIfNewUser(); // Re-check after login
-                          if (mounted) setState(() {});
-                        } else {
-                          await googleAuthLogout();
-                          if (mounted) setState(() {});
-                        }
-                      },
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color.fromARGB(255, 229, 229, 229),
+        child: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : Scaffold(
+                body: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userProfile?.role == "Admin"
+                            ? "Admin Profile"
+                            : "Profile",
+                        style: const TextStyle(
+                            fontSize: 28,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      if (user != null) ...[
+                        const Padding(
+                          padding: EdgeInsets.only(top: 16.0),
+                          child: Text(
+                            "Account",
+                            style: TextStyle(
+                                fontSize: 20, color: AppColors.secondaryGrey),
                           ),
                         ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 80,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(right: 12.0),
-                                      child: Icon(FontAwesomeIcons.google),
-                                    ),
-                                    Text(
-                                      user == null
-                                          ? "Continue with Google"
-                                          : "Sign Out with Google",
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                const Icon(Icons.arrow_forward_ios_rounded)
-                              ],
-                            ),
-                          ),
+                        InfoContainer(
+                          type: "Name",
+                          data:
+                              "${userProfile?.firstName} ${userProfile?.lastName}",
+                        ),
+                        InfoContainer(
+                          type: "Email",
+                          data: "${user.email}",
+                        ),
+                        InfoContainer(
+                          type: "College",
+                          data: "${userCollege?.college}",
+                        ),
+                        InfoContainer(
+                          type: "Course",
+                          data: "${userCourse?.courseName}",
+                        ),
+                      ],
+                      const Padding(
+                        padding: EdgeInsets.only(top: 16.0),
+                        child: Text(
+                          "General",
+                          style: TextStyle(
+                              fontSize: 20, color: AppColors.secondaryGrey),
                         ),
                       ),
-                    ),
-                  ),
-                ),
 
-                if (user != null) ...[
-                  // Delete account button
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          // handle delete account
-                        },
-                        child: Ink(
-                          decoration: BoxDecoration(
-                              color: AppColors.error,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color.fromARGB(255, 229, 229, 229),
-                              )),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 70,
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              alignment: Alignment.centerLeft,
-                              child: const Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Delete Account",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                      /// Google Login/Logout
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              if (user == null) {
+                                await googleAuthLogin();
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                await checkIfNewUser();
+                                // setState(() {
+                                //   isLoading = false;
+                                // });
+                              } else {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                await googleAuthLogout();
+
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color:
+                                      const Color.fromARGB(255, 229, 229, 229),
+                                ),
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 80,
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  alignment: Alignment.centerLeft,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Padding(
+                                            padding:
+                                                EdgeInsets.only(right: 12.0),
+                                            child:
+                                                Icon(FontAwesomeIcons.google),
+                                          ),
+                                          Text(
+                                            user == null
+                                                ? "Continue with Google"
+                                                : "Sign Out with Google",
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      const Icon(
+                                          Icons.arrow_forward_ios_rounded)
+                                    ],
                                   ),
-                                  Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    color: Colors.white,
-                                  )
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
 
-                // Terms
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () {},
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color.fromARGB(255, 229, 229, 229),
+                      if (user != null) ...[
+                        // Delete account button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                // handle delete account
+                              },
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                    color: AppColors.error,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color.fromARGB(
+                                          255, 229, 229, 229),
+                                    )),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 70,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    alignment: Alignment.centerLeft,
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Delete Account",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Icon(
+                                          Icons.arrow_forward_ios_rounded,
+                                          color: Colors.white,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 80,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            alignment: Alignment.centerLeft,
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Terms and Services",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                      ],
+
+                      // Terms
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {},
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color:
+                                      const Color.fromARGB(255, 229, 229, 229),
                                 ),
-                                Icon(Icons.arrow_forward_ios_rounded)
-                              ],
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 80,
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  alignment: Alignment.centerLeft,
+                                  child: const Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Terms and Services",
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Icon(Icons.arrow_forward_ios_rounded)
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }

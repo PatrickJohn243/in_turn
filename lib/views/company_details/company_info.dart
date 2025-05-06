@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/provider/favorites_provider.dart';
+import 'package:inturn/provider/page_provider.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -109,11 +110,56 @@ class _CompanyInfoState extends State<CompanyInfo> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
                               onTap: () {
+                                final snackbar = SnackBar(
+                                  padding: const EdgeInsets.all(12),
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 24.0, horizontal: 12),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  content: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          isFavorite
+                                              ? "Removed from favorites"
+                                              : "Added to favorites",
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                      if (!isFavorite)
+                                        TextButton(
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            backgroundColor:
+                                                AppColors.primaryGrey,
+                                            side: const BorderSide(
+                                                color: Colors.white),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            context
+                                                .read<PageProvider>()
+                                                .setIndex(2);
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text("See Favorites"),
+                                        ),
+                                    ],
+                                  ),
+                                  backgroundColor: AppColors.primaryGrey,
+                                );
+
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackbar);
                                 toggleFavorite();
-                                // SaveCompany().addToSaves(widget.company.companyId);
-                                // setState(() {
-                                //   isFavorite = !isFavorite;
-                                // });
                               },
                               child: Ink(
                                 child: Container(

@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
 
   void fetchCourses(String collegeId) async {
     final fetchedCourses = await CoursesFetching().fetchCourses(collegeId);
-
+    log("Is Called");
     setState(() {
       courses = fetchedCourses;
     });
@@ -53,6 +53,7 @@ class _HomePageState extends State<HomePage> {
   void setInitialCompanies(List<Companies> companies) {
     setState(() {
       filteredCompanies = companies;
+      log(filteredCompanies.length.toString());
     });
   }
 
@@ -61,18 +62,16 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     textController = TextEditingController();
     textFieldFocusNode = FocusNode();
+    setInitialCompanies(widget.companies);
     if (widget.user != null) {
       fetchCourses(widget.user!.collegeId);
     }
-    setInitialCompanies(widget.companies);
   }
 
   @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
-
-    if (widget.user != null) {
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.user == null && widget.user != null) {
       fetchCourses(widget.user!.collegeId);
     }
   }
@@ -211,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                               Padding(
                                   padding: const EdgeInsetsDirectional.fromSTEB(
                                       0, 8, 0, 8),
-                                  child: _buildChoiceChips()),
+                                  child: buildChoiceChips()),
                               const SizedBox(width: 16),
                             ],
                           ),
@@ -262,7 +261,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildChoiceChips() {
+  Widget buildChoiceChips() {
     final List<Courses> courseChips = courses.map((course) => course).toList();
 
     return Wrap(

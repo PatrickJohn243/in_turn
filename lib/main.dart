@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:inturn/provider/favorites_provider.dart';
+import 'package:inturn/provider/page_provider.dart';
 import 'package:inturn/routes/dashboard.dart';
 import 'package:inturn/provider/auth_state_provider.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (__) => PageProvider()),
         ChangeNotifierProvider(create: (_) => AuthStateProvider()),
         ChangeNotifierProvider(create: (context) => FavoritesProvider())
       ],

@@ -47,6 +47,7 @@ class _SearchPageState extends State<SearchPage> {
 
   void setInitialCompanyList() async {
     setState(() {
+      log(widget.companies.length.toString());
       filteredCompanies = widget.companies;
     });
   }
@@ -103,7 +104,7 @@ class _SearchPageState extends State<SearchPage> {
               fetchCourses();
               setState(() {
                 coursesChipsSelected = [];
-                // searchFetching(value, coursesChipsSelected); Continue
+                searchFetching('', coursesChipsSelected);
               });
             },
             child: SingleChildScrollView(
