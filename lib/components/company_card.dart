@@ -106,26 +106,16 @@ class _CompanyCardState extends State<CompanyCard> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Wrap(
-                              spacing: 4,
-                              alignment: WrapAlignment.start,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              direction: Axis.horizontal,
-                              children: [
-                                Text(
-                                  widget.company.fieldSpecialization,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                  ),
+                            Expanded(
+                              child: Text(
+                                "${widget.company.fieldSpecialization} · ${widget.company.mode}",
+                                style: const TextStyle(
+                                  fontSize: 14,
                                 ),
-                                const Text("·"),
-                                Text(
-                                  widget.company.mode,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
+                              ),
                             ),
                             Icon(Icons.more_horiz)
                           ],

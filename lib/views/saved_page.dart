@@ -71,16 +71,16 @@ class _SavedPageState extends State<SavedPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: EdgeInsets.all(12.0),
                     child: Text(
-                      "Your favorites",
+                      "Check your favorites!",
                       style:
                           TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  // Divider(
-                  //   thickness: 1,
-                  // ),
+                  const Divider(
+                    thickness: 1,
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: ListView(

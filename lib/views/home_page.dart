@@ -110,8 +110,9 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   widget.user == null
                       ? 'Hey User'
-                      : 'Hey ${widget.user!.firstName}',
-                  style: const TextStyle(fontSize: 24),
+                      : 'Hey, ${widget.user!.firstName}',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w500),
                 ),
                 const Text(
                   'Welcome to InTurn',
