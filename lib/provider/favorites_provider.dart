@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/view_models/save_company.dart';
@@ -9,6 +11,7 @@ class FavoritesProvider extends ChangeNotifier {
 
   void setInitialFavorites(List<Companies> companies) {
     savedCompanies = companies;
+    // log(companies.length.toString());
     notifyListeners();
   }
 

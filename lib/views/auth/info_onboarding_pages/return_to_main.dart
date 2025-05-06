@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:inturn/provider/profile_reloader_provider.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
+import 'package:provider/provider.dart';
 
 class ReturnToMain extends StatelessWidget {
-  const ReturnToMain({Key? key}) : super(key: key);
+  const ReturnToMain({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +37,7 @@ class ReturnToMain extends StatelessWidget {
                     // color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
+                        context.read<ProfileReloaderProvider>().triggerReload();
                         Navigator.pop(context);
                       },
                       child: Ink(

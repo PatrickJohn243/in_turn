@@ -6,6 +6,7 @@ import 'package:inturn/main.dart';
 import 'package:inturn/models/colleges.dart';
 import 'package:inturn/models/courses.dart';
 import 'package:inturn/models/users.dart';
+import 'package:inturn/provider/profile_reloader_provider.dart';
 import 'package:inturn/services/google_auth.dart';
 import 'package:inturn/utils/constants/app_colors.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -14,6 +15,7 @@ import 'package:inturn/view_models/courses_fetching.dart';
 import 'package:inturn/view_models/user_fetching.dart';
 import 'package:inturn/views/auth/info_onboarding.dart';
 import 'package:inturn/views/auth/info_onboarding_pages/role_selection.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -30,19 +32,16 @@ class _ProfilePageState extends State<ProfilePage> {
   Courses? userCourse;
   bool isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    checkIfNewUser();
-  }
-
   Future<void> checkIfNewUser() async {
+    log("user");
     final currentUser = supabase.auth.currentUser;
     setState(() {
       userId = currentUser!.id;
     });
 
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      return;
+    }
 
     final data = await supabase
         .from('users')
@@ -52,6 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (data == null) {
       if (mounted) {
+        setState(() {});
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const InfoOnboarding()),
@@ -77,6 +77,24 @@ class _ProfilePageState extends State<ProfilePage> {
         isLoading = false;
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkIfNewUser();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final reloadNotifier = Provider.of<ProfileReloaderProvider>(context);
+
+    if (reloadNotifier.shouldReload) {
+      checkIfNewUser();
+      reloadNotifier.reset();
+    }
   }
 
   @override
@@ -116,19 +134,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         InfoContainer(
                           type: "Name",
                           data:
-                              "${userProfile?.firstName} ${userProfile?.lastName}",
+                              "${userProfile?.firstName ?? ''} ${userProfile?.lastName ?? ''}",
                         ),
                         InfoContainer(
                           type: "Email",
-                          data: "${user.email}",
+                          data: "${user.email ?? ''}",
                         ),
                         InfoContainer(
                           type: "College",
-                          data: "${userCollege?.college}",
+                          data: "${userCollege?.college ?? ''}",
                         ),
                         InfoContainer(
                           type: "Course",
-                          data: "${userCourse?.courseName}",
+                          data: "${userCourse?.courseName ?? ''}",
                         ),
                       ],
                       const Padding(

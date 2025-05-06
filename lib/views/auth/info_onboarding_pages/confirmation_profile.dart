@@ -16,6 +16,7 @@ class ConfirmationProfile extends StatefulWidget {
   final String course;
   final String courseId;
   final String role;
+  final VoidCallback onBack;
   const ConfirmationProfile(
       {super.key,
       required this.onContinue,
@@ -25,7 +26,8 @@ class ConfirmationProfile extends StatefulWidget {
       required this.course,
       required this.role,
       required this.collegeId,
-      required this.courseId});
+      required this.courseId,
+      required this.onBack});
 
   @override
   _ConfirmationProfileState createState() => _ConfirmationProfileState();
@@ -159,10 +161,10 @@ class _ConfirmationProfileState extends State<ConfirmationProfile> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      widget.onBack();
                     },
                     child: const Text(
-                      "Back to Main",
+                      "Back",
                       style: TextStyle(
                         color: AppColors.secondaryGrey,
                         decoration: TextDecoration.underline,

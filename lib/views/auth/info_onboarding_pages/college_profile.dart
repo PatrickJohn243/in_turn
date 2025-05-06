@@ -7,7 +7,9 @@ import 'package:inturn/view_models/college_fetching.dart';
 
 class CollegeProfile extends StatefulWidget {
   final Function(String, String) onContinue;
-  const CollegeProfile({super.key, required this.onContinue});
+  final VoidCallback onBack;
+  const CollegeProfile(
+      {super.key, required this.onContinue, required this.onBack});
 
   @override
   _CollegeProfileState createState() => _CollegeProfileState();
@@ -100,10 +102,10 @@ class _CollegeProfileState extends State<CollegeProfile> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      widget.onBack();
                     },
                     child: const Text(
-                      "Back to Main",
+                      "Back",
                       style: TextStyle(
                         color: AppColors.secondaryGrey,
                         decoration: TextDecoration.underline,

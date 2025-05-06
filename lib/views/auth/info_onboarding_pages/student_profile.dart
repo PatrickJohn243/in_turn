@@ -3,8 +3,10 @@ import 'package:inturn/utils/constants/app_colors.dart';
 
 class StudentProfile extends StatefulWidget {
   final Function(String, String) onContinue;
+  final VoidCallback onBack;
 
-  const StudentProfile({Key? key, required this.onContinue}) : super(key: key);
+  const StudentProfile(
+      {super.key, required this.onContinue, required this.onBack});
 
   @override
   _StudentProfileState createState() => _StudentProfileState();
@@ -157,9 +159,11 @@ class _StudentProfileState extends State<StudentProfile>
                     color: AppColors.secondaryGrey,
                   ),
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      widget.onBack();
+                    },
                     child: const Text(
-                      "Back to Main",
+                      "Back",
                       style: TextStyle(
                         color: AppColors.secondaryGrey,
                         decoration: TextDecoration.underline,

@@ -35,6 +35,16 @@ class _InfoOnboardingState extends State<InfoOnboarding> {
     }
   }
 
+  void previousPage() {
+    if (currentStep > 0) {
+      _pageController.previousPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      setState(() => currentStep--);
+    }
+  }
+
   void onRoleSelected(String selectedRole) {
     setState(() {
       role = selectedRole;
@@ -89,11 +99,18 @@ class _InfoOnboardingState extends State<InfoOnboarding> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   RoleSelection(onContinue: onRoleSelected),
-                  StudentProfile(onContinue: onNameEntered),
-                  CollegeProfile(onContinue: onCollegeSelected),
+                  StudentProfile(
+                    onContinue: onNameEntered,
+                    onBack: previousPage,
+                  ),
+                  CollegeProfile(
+                    onContinue: onCollegeSelected,
+                    onBack: previousPage,
+                  ),
                   CourseProfile(
                     onContinue: onCourseSelected,
                     collegeId: selectedCollegeId,
+                    onBack: previousPage,
                   ),
                   if (selectedCourse != null)
                     ConfirmationProfile(
@@ -105,6 +122,7 @@ class _InfoOnboardingState extends State<InfoOnboarding> {
                       course: selectedCourse!,
                       courseId: selectedCourseId!,
                       role: role!,
+                      onBack: previousPage,
                     ),
                   const ReturnToMain(),
                 ],

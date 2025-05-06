@@ -6,6 +6,7 @@ import 'package:inturn/main.dart';
 import 'package:inturn/models/companies.dart';
 import 'package:inturn/models/savedCompanies.dart';
 import 'package:inturn/models/users.dart';
+import 'package:inturn/provider/auth_state_provider.dart';
 import 'package:inturn/provider/favorites_provider.dart';
 import 'package:inturn/view_models/companies_fetching.dart';
 import 'package:provider/provider.dart';
@@ -22,28 +23,49 @@ class SavedPage extends StatefulWidget {
 class _SavedPageState extends State<SavedPage> {
   List<SavedCompanies> savedCompaniesId = [];
   List<Companies> savedCompanies = [];
+  bool isLoading = false;
+  bool hasFetched = false;
 
   Future<void> fetchSavedCompanies() async {
-    List<Companies> companies = [];
-    if (widget.user == null) return;
+    log("fetchSavedCompanies called");
+    final authUser =
+        Provider.of<AuthStateProvider>(context, listen: false).user;
+    if (authUser == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
-    final savedIds =
-        await CompaniesFetching().fetchSavedCompanies(widget.user!.userId);
     setState(() {
-      savedCompaniesId = savedIds;
+      isLoading = true;
     });
 
-    for (var saved in savedCompaniesId) {
-      final fetchedList =
-          await CompaniesFetching().fetchCompaniesByCompanyId(saved.companyId);
-      if (fetchedList.isNotEmpty) {
-        setState(() {
+    try {
+      List<Companies> companies = [];
+      final savedIds =
+          await CompaniesFetching().fetchSavedCompanies(authUser.id);
+      setState(() {
+        savedCompaniesId = savedIds;
+      });
+
+      for (var saved in savedCompaniesId) {
+        final fetchedList = await CompaniesFetching()
+            .fetchCompaniesByCompanyId(saved.companyId);
+        if (fetchedList.isNotEmpty) {
           companies.add(fetchedList.first);
-        });
+        }
       }
+
+      Provider.of<FavoritesProvider>(context, listen: false)
+          .setInitialFavorites(companies);
+    } catch (e) {
+      log("Error fetching companies: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-    Provider.of<FavoritesProvider>(context, listen: false)
-        .setInitialFavorites(companies);
   }
 
   @override
@@ -51,12 +73,27 @@ class _SavedPageState extends State<SavedPage> {
     // TODO: implement initState
     super.initState();
     fetchSavedCompanies();
+    setState(() {
+      hasFetched = false;
+    });
   }
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
+
+    final authState = Provider.of<AuthStateProvider>(context);
+
+    if (authState.user != null && !hasFetched) {
+      fetchSavedCompanies();
+      setState(() {
+        hasFetched = true;
+      });
+    } else if (authState.user == null && hasFetched) {
+      setState(() {
+        hasFetched = false;
+      });
+    }
   }
 
   @override
@@ -81,30 +118,37 @@ class _SavedPageState extends State<SavedPage> {
                   const Divider(
                     thickness: 1,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: ListView(
-                      padding: EdgeInsets.fromLTRB(0, 8, 0, 44),
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      children: savedCompanies
-                          .map((company) => CompanyItem(company: company))
-                          .toList(),
-                    ),
-                  ),
+                  isLoading
+                      ? SizedBox(
+                          height: MediaQuery.of(context).size.height * .8,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ListView(
+                            padding: EdgeInsets.fromLTRB(0, 8, 0, 44),
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            children: savedCompanies
+                                .map((company) => CompanyItem(company: company))
+                                .toList(),
+                          ),
+                        ),
                 ],
               ),
             )
           : const Center(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.lock_outline, size: 64, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
-                      "Log in to save your favorites!",
+                      "Log in to see your favorites!",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,
